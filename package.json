@@ -6,8 +6,8 @@
   "scripts": {
     "start": "node index.js",
     "lint": "eslint index.js server/*.js test/*.js; exit 0",
-    "test": "tape test/*.js | tap-spec",
-    "test-infinite": "nodemon node_modules/.bin/tape test/*.js | tap-spec"
+    "test": "NODE_ENV=test tape test/*.js | tap-spec",
+    "test-infinite": "NODE_ENV=test nodemon node_modules/.bin/tape test/*.js | tap-spec"
   },
   "repository": {
     "type": "git",

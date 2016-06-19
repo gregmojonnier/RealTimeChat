@@ -16,7 +16,7 @@ test('GET /users - querying all users information', function(t) {
         });
 });
 
-test('POST /user - adding a user', function(t) {
+test('POST /user', function(t) {
     var req = request(chatApp);
     req
         .post('/user')
@@ -29,7 +29,7 @@ test('POST /user - adding a user', function(t) {
             }
         })
         .end(function(err, res) {
-            t.error(err, 'a new user can be added');
+            t.error(err, 'can be used to add a user');
 
             req.get('/users')
             .expect(function(res) {

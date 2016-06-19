@@ -6,7 +6,9 @@ var app = express();
 
 module.exports = app;
 
-app.use(morgan('dev'));
+if (process.env.NODE_ENV !== 'test') {
+    app.use(morgan('dev'));
+}
 app.use(bodyParser.json());
 
 var users = [];
