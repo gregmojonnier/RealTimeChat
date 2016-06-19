@@ -2,6 +2,7 @@ var express = require('express');
 var bodyParser = require('body-parser');
 var uuid = require('node-uuid');
 var morgan = require('morgan');
+var _ = require('underscore');
 var app = express();
 
 module.exports = app;
@@ -12,13 +13,20 @@ if (process.env.NODE_ENV !== 'test') {
 app.use(bodyParser.json());
 
 var users = [];
+var messages = [];
 
 app.get('/users', queryUsersHandler);
+app.get('/messages', queryMessagesHandler);
 app.post('/user', addUserHandler);
+app.post('/message', addMessage);
 app.use(errorHandler);
 
 function queryUsersHandler(req, res) {
-    res.status(200).json({'users':users});
+    res.status(200).json({users});
+}
+
+function queryMessagesHandler(req, res) {
+    res.status(200).json({messages});
 }
 
 function addUserHandler(req, res, next) {
@@ -31,7 +39,27 @@ function addUserHandler(req, res, next) {
     res.status(201).json(userInfo);
 }
 
+function addMessage(req, res, next) {
+    if (!req.body) {
+        next('request body missing');
+        return;
+    } else if (!req.body.id) {
+        next('request body missing id');
+        return;
+    } else if (!req.body.message) {
+        next('request body missing message');
+        return;
+    }
+    if (_.find(users, {id:req.body.id})) {
+        messages.push({id:req.body.id, message:req.body.message});
+        res.status(201).end();
+    }
+    else {
+        res.status(403).json({error:'invalid user'});
+    }
+}
+
 function errorHandler(err, req, res, next) {
-    //console.log(err);
+    console.log(err);
     res.status(400).end();
 }

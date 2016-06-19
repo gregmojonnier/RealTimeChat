@@ -1,46 +1,122 @@
-var test = require('tape');
-var request = require('supertest');
+var test = require('blue-tape');
+var request = require('supertest-as-promised');
 var chatApp = require('../server/ChatApp');
-var validUuid = require('uuid-validate');
+var isValidUuid = require('uuid-validate');
 var _ = require('underscore');
 
+
+// helper function to start chat server app with 1 user and get their id
+function addUserToChat(userInfo, req) {
+    if (!userInfo || !_.isObject(userInfo) || !userInfo.name) {
+        throw 'Can\'t add a no name to the chat!';
+    }
+    return req.post('/user')
+            .send(userInfo)
+            .then(function(res) {
+                userInfo.id = res.body.id;
+            });
+}
+
 test('GET /users - querying all users information', function(t) {
-    request(chatApp)
+    var req = request(chatApp);
+    return req
         .get('/users')
 		.expect('Content-Type', /json/)
         .expect(200)
-        .expect({users: []})
-        .end(function(err, res) {
-            t.error(err, 'starts with 0 users');
-            t.end();
+        .then(function(res) {
+            var body = res.body;
+            t.ok(body.users, 'response has users key');
+            t.ok(_.isArray(body.users), 'users is an array');
+            t.isEqual(body.users.length, 0, 'starts with 0 users');
+        })
+        .then(function(res) {
+            var userInfo = {'name': 'foobar'};
+            return addUserToChat(userInfo, req)
+                    .then(function() {
+                        return req
+                            .get('/users')
+                            .then(function(res) {
+                                var body = res.body;
+                                t.isEqual(body.users.length, 1, 'adding a user results in the users array growing by 1');
+                            })
+                        console.log(res);
+                    });
         });
 });
 
-test('POST /user', function(t) {
+test('POST /user - a name is all that\'s needed to add a user', function(t) {
     var req = request(chatApp);
-    req
+    return req
         .post('/user')
         .send({'name':'foobar'})
         .expect(201)
-        .expect(function(res) {
-            var body = res.body || {};
-            if (!body.name || !body.id || body.name !== 'foobar' || !validUuid(body.id)) {
-                throw new Error('Response body "' + JSON.stringify(body) + '" did not contain expected name and id.');
-            }
+        .then(function(res) {
+            var body = res.body;
+            t.ok(body.name, 'response has a name key');
+            t.ok(body.id, 'response has an id key');
+            t.isEqual(body.name, 'foobar', 'response name matches what we sent');
+            t.true(isValidUuid(body.id), 'response id is a valid uuid');
         })
-        .end(function(err, res) {
-            t.error(err, 'can be used to add a user');
+        .then(function(res) {
+            return req.get('/users')
+                .then(function(res) {
+                    console.log('Added user can then be queried with GET /users');
+                    var body = res.body;
+                    t.ok(body.users, 'response has a users key');
+                    t.true(_.find(body.users, {'name':'foobar'}), 'found name in users array');
+                });
+        });
+});
 
-            req.get('/users')
-            .expect(function(res) {
-                var body = res.body || {};
-                if (!body.users || !_.find(body.users, {'name':'foobar'})) {
-                    throw new Error('Did not find user in response body: ' + JSON.stringify(body));
-                }
-            })
-            .end(function(err, res) {
-                t.error(err, 'an added user can then be queried');
-                t.end();
+test('GET /messages - can be used to query messages', function(t) {
+    return request(chatApp)
+            .get('/messages')
+            .expect('Content-Type', /json/)
+            .expect(200)
+            .expect({messages: []})
+            .then(function(res) {
+                var messages = res.body.messages;
+                t.ok(messages, 'response has a messages key');
+                t.ok(_.isArray(messages), 'messages is an array');
+                t.isEqual(messages.length, 0, 'starts with 0 messages');
             });
-        })
+});
+
+test('Working with messages', function(t) {
+    var userInfo = {'name':'foobar'};
+    var message = 'hello world';
+    var id; // assigned by server
+
+    var req = request(chatApp);
+    return addUserToChat(userInfo, req)
+            .then(function(res) {
+                id = userInfo.id;
+                return req.post('/message')
+                        .send({id, message})
+                        .expect(201)
+                        .expect(function() {
+                            t.pass('POST /message with a valid user id adds a message');
+                        });
+            })
+            .then(function(res) {
+                return req
+                        .get('/messages')
+                        .then(function(res) {
+                            var body = res.body;
+                            t.ok(_.find(body.messages, {id, message}), 'GET /messages contains the message we just added');
+                        });
+            });
+});
+
+test('POST /message - adding a message for a user id that hasn\'t been created fails', function(t) {
+    var req = request(chatApp);
+    return req
+            .post('/message')
+            .send({'id':'a_bad_id', 'message':'hello world'})
+            .expect(403)
+            .then(function(res) {
+                var body = res.body;
+                t.ok(body.error, 'response has an error key');
+                t.isEqual(body.error, 'invalid user', 'error cites invalid user');
+            })
 });
