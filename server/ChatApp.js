@@ -35,9 +35,17 @@ function createApp() {
             next('body did not contain a valid name');
             return;
         }
-        var userInfo = {'name':req.body.name, 'id':uuid.v4()};
-        users.push(userInfo);
-        res.status(201).json(userInfo);
+        var userInfo = {'name':req.body.name};
+        var uniqueName = !_.find(users, userInfo);
+
+        if (uniqueName) {
+            userInfo.id = uuid.v4();
+            users.push(userInfo);
+            res.status(201).json(userInfo);
+        }
+        else {
+            res.status(409).json({error:'duplicate user'});
+        }
     }
 
     function addMessage(req, res, next) {

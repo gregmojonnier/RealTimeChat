@@ -25,6 +25,18 @@ test('POST /user - a name is all that\'s needed to add a user', function(t) {
                     t.ok(body.users, 'response has a users key');
                     t.true(_.find(body.users, {'name':'foobar'}), 'found name in users array');
                 });
+        })
+        .then(function(res) {
+            return req
+                    .post('/user')
+                    .send({'name':'foobar'})
+                    .expect(409)
+                    .then(function(res) {
+                        console.log('Trying to add a user name that already exists will fail');
+                        var body = res.body;
+                        t.ok(body.error, 'response has an error key');
+                        t.isEqual(body.error, 'duplicate user', 'error cites duplicate user');
+                    });
         });
 });
 
