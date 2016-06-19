@@ -4,19 +4,6 @@ var ChatApp = require('../server/ChatApp');
 var isValidUuid = require('uuid-validate');
 var _ = require('underscore');
 
-
-// helper function to start chat server app with 1 user and get their id
-function addUserToChat(userInfo, req) {
-    if (!userInfo || !_.isObject(userInfo) || !userInfo.name) {
-        throw 'Can\'t add a no name to the chat!';
-    }
-    return req.post('/user')
-            .send(userInfo)
-            .then(function(res) {
-                userInfo.id = res.body.id;
-            });
-}
-
 test('POST /user - a name is all that\'s needed to add a user', function(t) {
     var req = request(ChatApp());
     return req
@@ -107,7 +94,9 @@ test('POST /message - can be used to add a message', function(t) {
 });
 
 test('GET /messages - can be used to query messages', function(t) {
-    return request(ChatApp())
+    var userInfo = {'name':'foobar'};
+    var req = request(ChatApp());
+    return req
             .get('/messages')
             .expect('Content-Type', /json/)
             .expect(200)
@@ -117,5 +106,44 @@ test('GET /messages - can be used to query messages', function(t) {
                 t.ok(messages, 'response has a messages key');
                 t.ok(_.isArray(messages), 'messages is an array');
                 t.isEqual(messages.length, 0, 'starts with 0 messages');
+            })
+            .then(function() {
+                return addUserToChat(userInfo, req);
+            })
+            .then(function() {
+                return addMessageForId(userInfo.id, 'hello world', req);
+            })
+            .then(function() {
+                return req.get('/messages')
+                        .then(function(res) {
+                            t.isEqual(res.body.messages.length, 1, 'adding a message results in the messages array growing by 1');
+                        });
             });
 });
+
+
+//
+// helper functions to simplify some actions in tests that are not the main focus in the tests
+//
+
+// adds 1 user to chat app and gets their server generated id
+function addUserToChat(userInfo, req) {
+    if (!userInfo || !_.isObject(userInfo) || !userInfo.name) {
+        throw 'Can\'t add a no name to the chat!';
+    }
+    return req.post('/user')
+            .send(userInfo)
+            .then(function(res) {
+                userInfo.id = res.body.id;
+            });
+}
+
+// adds a message for the given id
+function addMessageForId(id, message, req) {
+    if (!id || !message || !req) {
+        throw 'Unable to add message for id!';
+    }
+    return req
+            .post('/message')
+            .send({id, message});
+}
