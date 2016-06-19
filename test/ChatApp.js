@@ -49,6 +49,10 @@ test('GET /users - querying all users information', function(t) {
                             .then(function(res) {
                                 var body = res.body;
                                 t.isEqual(body.users.length, 1, 'adding a user results in the users array growing by 1');
+                                var user = body.users[0];
+                                t.ok(_.isObject(user), 'each user in the array is an object');
+                                t.ok(user.name, 'user has a name key');
+                                t.ok(user.lastActiveMs, 'user has a lastActiveMs key');
                             });
                     });
         });

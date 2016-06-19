@@ -23,7 +23,15 @@ function createApp() {
     app.use(errorHandler);
 
     function queryUsersHandler(req, res) {
-        res.status(200).json({users});
+        var usersForClient = [];
+        // client side should only know its own id
+        // and we'll calculate each user's last active time
+        _.each(users, function(user) {
+            var cleanedUser = _.omit(user, 'id');
+            cleanedUser.lastActiveMs = Date.now() - cleanedUser.lastActiveMs;
+            usersForClient.push(cleanedUser);
+        });
+        res.status(200).json({users:usersForClient});
     }
 
     function queryMessagesHandler(req, res) {
@@ -35,7 +43,7 @@ function createApp() {
             next('body did not contain a valid name');
             return;
         }
-        var userInfo = {name:req.body.name, id:uuid.v4()};
+        var userInfo = {name: req.body.name, id: uuid.v4(), lastActiveMs: Date.now()};
         users.push(userInfo);
         res.status(201).json(userInfo);
     }
