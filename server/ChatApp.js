@@ -1,8 +1,28 @@
 var express = require('express');
+var bodyParser = require('body-parser');
+var uuid = require('node-uuid');
 var app = express();
 
 module.exports = app;
 
+app.use(bodyParser.json());
+
+var users = [];
 app.get('/users', function(req, res) {
-    res.status(200).json({'users':[]});
+    res.status(200).json({'users':users});
+});
+
+app.post('/user', function(req, res, next) {
+    if (!req.body || !req.body.name) {
+        next('body did not contain a valid name');
+        return;
+    }
+    var userInfo = {'name':req.body.name, 'id':uuid.v4()};
+    users.push(userInfo);
+    res.status(201).json(userInfo);
+});
+
+app.use(function(err, req, res, next) {
+    //console.log(err);
+    res.status(400).end();
 });
