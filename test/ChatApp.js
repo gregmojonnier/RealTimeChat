@@ -68,21 +68,7 @@ test('GET /users - querying all users information', function(t) {
         });
 });
 
-test('GET /messages - can be used to query messages', function(t) {
-    return request(ChatApp())
-            .get('/messages')
-            .expect('Content-Type', /json/)
-            .expect(200)
-            .expect({messages: []})
-            .then(function(res) {
-                var messages = res.body.messages;
-                t.ok(messages, 'response has a messages key');
-                t.ok(_.isArray(messages), 'messages is an array');
-                t.isEqual(messages.length, 0, 'starts with 0 messages');
-            });
-});
-
-test('Working with messages', function(t) {
+test('POST /message - can be used to add a message', function(t) {
     var userInfo = {'name':'foobar'};
     var message = 'hello world';
     var id; // assigned by server
@@ -95,7 +81,7 @@ test('Working with messages', function(t) {
                         .send({id, message})
                         .expect(201)
                         .expect(function() {
-                            t.pass('POST /message with a valid user id adds a message');
+                            t.pass('a valid user id can add a message');
                         });
             })
             .then(function(res) {
@@ -105,18 +91,31 @@ test('Working with messages', function(t) {
                             var body = res.body;
                             t.ok(_.find(body.messages, {id, message}), 'GET /messages contains the message we just added');
                         });
+            })
+            .then(function(res) {
+                return req
+                        .post('/message')
+                        .send({'id':'a_bad_id', 'message':'hello world'})
+                        .expect(403)
+                        .then(function(res) {
+                            console.log('Trying to add a message for a user id that doesn\'t exist fails');
+                            var body = res.body;
+                            t.ok(body.error, 'response has an error key');
+                            t.isEqual(body.error, 'invalid user', 'error cites invalid user');
+                        });
             });
 });
 
-test('POST /message - adding a message for a user id that hasn\'t been created fails', function(t) {
-    var req = request(ChatApp());
-    return req
-            .post('/message')
-            .send({'id':'a_bad_id', 'message':'hello world'})
-            .expect(403)
+test('GET /messages - can be used to query messages', function(t) {
+    return request(ChatApp())
+            .get('/messages')
+            .expect('Content-Type', /json/)
+            .expect(200)
+            .expect({messages: []})
             .then(function(res) {
-                var body = res.body;
-                t.ok(body.error, 'response has an error key');
-                t.isEqual(body.error, 'invalid user', 'error cites invalid user');
-            })
+                var messages = res.body.messages;
+                t.ok(messages, 'response has a messages key');
+                t.ok(_.isArray(messages), 'messages is an array');
+                t.isEqual(messages.length, 0, 'starts with 0 messages');
+            });
 });
