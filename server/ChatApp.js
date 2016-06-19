@@ -1,10 +1,12 @@
 var express = require('express');
 var bodyParser = require('body-parser');
 var uuid = require('node-uuid');
+var morgan = require('morgan');
 var app = express();
 
 module.exports = app;
 
+app.use(morgan('dev'));
 app.use(bodyParser.json());
 
 var users = [];

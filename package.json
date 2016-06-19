@@ -23,6 +23,7 @@
     "body-parser": "^1.15.1",
     "ejs": "^2.4.2",
     "express": "^4.14.0",
+    "morgan": "^1.7.0",
     "node-uuid": "^1.4.7",
     "underscore": "^1.8.3",
     "uuid-validate": "0.0.2"
