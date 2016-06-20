@@ -62,8 +62,9 @@ function addMessage(req, res, next) {
         next('request body missing message');
         return;
     }
-    if (_.find(users, {id:req.body.id})) {
-        messages.push({id:req.body.id, message:req.body.message});
+    var user = _.find(users, {id:req.body.id});
+    if (user) {
+        messages.push({name: user.name, message: req.body.message, time: Date()});
         res.status(201).end();
     }
     else {

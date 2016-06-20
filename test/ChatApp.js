@@ -77,7 +77,7 @@ test('POST /message - can be used to add a message', function(t) {
                 return req.get('/messages');
             })
             .then(function(res) {
-                t.ok(_.find(res.body.messages, {id, message}), 'GET /messages contains the message we just added');
+                t.ok(_.find(res.body.messages, {name: userInfo.name, message}), 'GET /messages contains the message we just added');
             })
             .then(function() {
                 return req
@@ -118,6 +118,10 @@ test('GET /messages - can be used to query messages', function(t) {
             })
             .then(function(res) {
                 t.isEqual(res.body.messages.length, 1, 'adding a message results in the messages array growing by 1');
+                var message = res.body.messages[0];
+                t.ok(message.name, 'each message has a\nname');
+                t.ok(message.message, 'each message has a message');
+                t.ok(message.time, 'each message has a time');
             });
 });
 
