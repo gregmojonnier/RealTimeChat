@@ -22,8 +22,10 @@ app.post('/user', addUserHandler);
 app.post('/message', addMessage);
 app.use(errorHandler);
 
-var cleanInactiveUsersInterval = 30000;
+var cleanInactiveUsersInterval = 30000; // 30 seconds
+var cleanStaleMessagesInterval = 60000 * 5; // 5 minutes
 setInterval(cleanInactiveUsers, cleanInactiveUsersInterval);
+setInterval(cleanStaleMessages, cleanStaleMessagesInterval);
 
 function queryUsersHandler(req, res) {
     var usersForClient = [];
@@ -81,5 +83,13 @@ function cleanInactiveUsers() {
     users = _.filter(users, function(user) {
         var lastActiveInMS = Date.now() - user.lastActiveInMS;
         return lastActiveInMS < cleanInactiveUsersInterval;
+    });
+}
+
+function cleanStaleMessages() {
+    var currentTime = new Date().getTime();
+    messages = _.filter(messages, function(message) {
+        var messageAgeInMS = currentTime - new Date(message.time).getTime();
+        return messageAgeInMS < cleanStaleMessagesInterval;
     });
 }

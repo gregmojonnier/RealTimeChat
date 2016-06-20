@@ -147,6 +147,31 @@ test('User expiration', function(t) {
             });
 });
 
+test('Message expiration', function(t) {
+    var userInfo = {'name': 'foobar'};
+    var clock = sinon.useFakeTimers();
+
+    var req = freshChatAppRequest();
+    return addUserToChat(userInfo, req)
+            .then(function() {
+                return addMessageForId(userInfo.id, 'hello world', req);
+            })
+            .then(function() {
+                return req.get('/messages');
+            })
+            .then(function(res) {
+                t.isEqual(res.body.messages.length, 1, 'able to add a user and a message from that user');
+            })
+            .then(function() {
+                clock.tick(60000*5); // messages should expire every 5 minutes
+                return req.get('/messages');
+            })
+            .then(function(res) {
+                t.isEqual(res.body.messages.length, 0, 'after 5 mintues a message is cleaned up');
+                clock.restore();
+            });
+});
+
 //
 // helper functions to simplify some actions in tests that are not the main focus in the tests
 //
