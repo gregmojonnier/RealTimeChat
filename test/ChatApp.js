@@ -3,10 +3,10 @@ var sinon = require('sinon');
 var request = require('supertest-as-promised');
 var isValidUuid = require('uuid-validate');
 var _ = require('underscore');
-var ChatApp = require('../server/ChatApp');
+var reload = require('require-reload')(require);
 
 test('POST /user - a name is all that\'s needed to add a user', function(t) {
-    var req = request(ChatApp());
+    var req = freshChatAppRequest();
     return req
         .post('/user')
         .send({'name':'foobar'})
@@ -30,7 +30,7 @@ test('POST /user - a name is all that\'s needed to add a user', function(t) {
 });
 
 test('GET /users - querying all users information', function(t) {
-    var req = request(ChatApp());
+    var req = freshChatAppRequest();
     return req
         .get('/users')
         .expect('Content-Type', /json/)
@@ -62,7 +62,7 @@ test('POST /message - can be used to add a message', function(t) {
     var message = 'hello world';
     var id; // assigned by server
 
-    var req = request(ChatApp());
+    var req = freshChatAppRequest();
     return addUserToChat(userInfo, req)
             .then(function() {
                 id = userInfo.id;
@@ -95,7 +95,7 @@ test('POST /message - can be used to add a message', function(t) {
 
 test('GET /messages - can be used to query messages', function(t) {
     var userInfo = {'name':'foobar'};
-    var req = request(ChatApp());
+    var req = freshChatAppRequest();
     return req
             .get('/messages')
             .expect('Content-Type', /json/)
@@ -125,7 +125,7 @@ test('User expiration', function(t) {
     var userInfo = {'name': 'foobar'};
     var clock = sinon.useFakeTimers();
 
-    var req = request(ChatApp());
+    var req = freshChatAppRequest();
     return addUserToChat(userInfo, req)
             .then(function() {
                 return req.get('/users');
@@ -167,4 +167,9 @@ function addMessageForId(id, message, req) {
     return req
             .post('/message')
             .send({id, message});
+}
+
+// clears require cache to ensure tests isolation of module's globals
+function freshChatAppRequest() {
+    return request(reload('../server/ChatApp'));
 }
