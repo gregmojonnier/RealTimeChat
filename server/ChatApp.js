@@ -31,7 +31,7 @@ function createApp() {
         // and we'll calculate each user's last active time
         _.each(users, function(user) {
             var cleanedUser = _.omit(user, 'id');
-            cleanedUser.lastActiveMs = Date.now() - cleanedUser.lastActiveMs;
+            cleanedUser.lastActiveInMS = Date.now() - cleanedUser.lastActiveInMS;
             usersForClient.push(cleanedUser);
         });
         res.status(200).json({users:usersForClient});
@@ -46,7 +46,7 @@ function createApp() {
             next('body did not contain a valid name');
             return;
         }
-        var userInfo = {name: req.body.name, id: uuid.v4(), lastActiveMs: Date.now()};
+        var userInfo = {name: req.body.name, id: uuid.v4(), lastActiveInMS: Date.now()};
         users.push(userInfo);
         res.status(201).json(userInfo);
     }
@@ -78,8 +78,8 @@ function createApp() {
     
     function cleanInactiveUsers() {
         users = _.filter(users, function(user) {
-            var lastActiveMs = Date.now() - user.lastActiveMs;
-            return lastActiveMs < cleanInactiveUsersInterval;
+            var lastActiveInMS = Date.now() - user.lastActiveInMS;
+            return lastActiveInMS < cleanInactiveUsersInterval;
         });
     }
 

@@ -19,13 +19,13 @@ test('POST /user - a name is all that\'s needed to add a user', function(t) {
             t.true(isValidUuid(body.id), 'response id is a valid uuid');
         })
         .then(function(res) {
-            return req.get('/users')
-                .then(function(res) {
-                    console.log('Added user can then be queried with GET /users');
-                    var body = res.body;
-                    t.ok(body.users, 'response has a users key');
-                    t.true(_.find(body.users, {'name':'foobar'}), 'found name in users array');
-                });
+            return req.get('/users');
+        })
+        .then(function(res) {
+            console.log('Added user can then be queried with GET /users');
+            var body = res.body;
+            t.ok(body.users, 'response has a users key');
+            t.true(_.find(body.users, {'name':'foobar'}), 'found name in users array');
         });
 });
 
@@ -41,21 +41,19 @@ test('GET /users - querying all users information', function(t) {
             t.ok(_.isArray(body.users), 'users is an array');
             t.isEqual(body.users.length, 0, 'starts with 0 users');
         })
+        .then(function() {
+            return addUserToChat({'name':'foobar'}, req);
+        })
+        .then(function() {
+            return req.get('/users');
+        })
         .then(function(res) {
-            var userInfo = {'name': 'foobar'};
-            return addUserToChat(userInfo, req)
-                    .then(function() {
-                        return req
-                            .get('/users')
-                            .then(function(res) {
-                                var body = res.body;
-                                t.isEqual(body.users.length, 1, 'adding a user results in the users array growing by 1');
-                                var user = body.users[0];
-                                t.ok(_.isObject(user), 'each user in the array is an object');
-                                t.ok(user.name, 'user has a name key');
-                                t.ok(user.lastActiveMs, 'user has a lastActiveMs key');
-                            });
-                    });
+            var body = res.body;
+            t.isEqual(body.users.length, 1, 'adding a user results in the users array growing by 1');
+            var user = body.users[0];
+            t.ok(_.isObject(user), 'each user in the array is an object');
+            t.ok(user.name, 'user has a name key');
+            t.ok(user.lastActiveInMS, 'user has a lastActiveInMS key');
         });
 });
 
@@ -66,7 +64,7 @@ test('POST /message - can be used to add a message', function(t) {
 
     var req = request(ChatApp());
     return addUserToChat(userInfo, req)
-            .then(function(res) {
+            .then(function() {
                 id = userInfo.id;
                 return req.post('/message')
                         .send({id, message})
@@ -75,25 +73,23 @@ test('POST /message - can be used to add a message', function(t) {
                             t.pass('a valid user id can add a message');
                         });
             })
-            .then(function(res) {
-                return req
-                        .get('/messages')
-                        .then(function(res) {
-                            var body = res.body;
-                            t.ok(_.find(body.messages, {id, message}), 'GET /messages contains the message we just added');
-                        });
+            .then(function() {
+                return req.get('/messages');
             })
             .then(function(res) {
+                t.ok(_.find(res.body.messages, {id, message}), 'GET /messages contains the message we just added');
+            })
+            .then(function() {
                 return req
                         .post('/message')
                         .send({'id':'a_bad_id', 'message':'hello world'})
                         .expect(403)
-                        .then(function(res) {
-                            console.log('Trying to add a message for a user id that doesn\'t exist fails');
-                            var body = res.body;
-                            t.ok(body.error, 'response has an error key');
-                            t.isEqual(body.error, 'invalid user', 'error cites invalid user');
-                        });
+            })
+            .then(function(res) {
+                console.log('Trying to add a message for a user id that doesn\'t exist fails');
+                var body = res.body;
+                t.ok(body.error, 'response has an error key');
+                t.isEqual(body.error, 'invalid user', 'error cites invalid user');
             });
 });
 
@@ -118,10 +114,10 @@ test('GET /messages - can be used to query messages', function(t) {
                 return addMessageForId(userInfo.id, 'hello world', req);
             })
             .then(function() {
-                return req.get('/messages')
-                        .then(function(res) {
-                            t.isEqual(res.body.messages.length, 1, 'adding a message results in the messages array growing by 1');
-                        });
+                return req.get('/messages');
+            })
+            .then(function(res) {
+                t.isEqual(res.body.messages.length, 1, 'adding a message results in the messages array growing by 1');
             });
 });
 
@@ -132,20 +128,18 @@ test('User expiration', function(t) {
     var req = request(ChatApp());
     return addUserToChat(userInfo, req)
             .then(function() {
-                return req
-                    .get('/users')
-                    .then(function(res) {
-                        t.isEqual(res.body.users.length, 1, 'able to add and then query a user');
-                    });
+                return req.get('/users');
+            })
+            .then(function(res) {
+                t.isEqual(res.body.users.length, 1, 'able to add and then query a user');
             })
             .then(function() {
                 clock.tick(40000); // users should expire every 30 seconds
-                return req
-                    .get('/users')
-                    .then(function(res) {
-                        t.isEqual(res.body.users.length, 0, 'after 30 seconds of inactivity, a user is removed');
-                        clock.restore();
-                    });
+                return req.get('/users');
+            })
+            .then(function(res) {
+                t.isEqual(res.body.users.length, 0, 'after 30 seconds of inactivity, a user is removed');
+                clock.restore();
             });
 });
 
