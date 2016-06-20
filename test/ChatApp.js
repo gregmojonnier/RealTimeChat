@@ -1,8 +1,9 @@
 var test = require('blue-tape');
+var sinon = require('sinon');
 var request = require('supertest-as-promised');
-var ChatApp = require('../server/ChatApp');
 var isValidUuid = require('uuid-validate');
 var _ = require('underscore');
+var ChatApp = require('../server/ChatApp');
 
 test('POST /user - a name is all that\'s needed to add a user', function(t) {
     var req = request(ChatApp());
@@ -124,6 +125,29 @@ test('GET /messages - can be used to query messages', function(t) {
             });
 });
 
+test('User expiration', function(t) {
+    var userInfo = {'name': 'foobar'};
+    var clock = sinon.useFakeTimers();
+
+    var req = request(ChatApp());
+    return addUserToChat(userInfo, req)
+            .then(function() {
+                return req
+                    .get('/users')
+                    .then(function(res) {
+                        t.isEqual(res.body.users.length, 1, 'able to add and then query a user');
+                    });
+            })
+            .then(function() {
+                clock.tick(40000); // users should expire every 30 seconds
+                return req
+                    .get('/users')
+                    .then(function(res) {
+                        t.isEqual(res.body.users.length, 0, 'after 30 seconds of inactivity, a user is removed');
+                        clock.restore();
+                    });
+            });
+});
 
 //
 // helper functions to simplify some actions in tests that are not the main focus in the tests

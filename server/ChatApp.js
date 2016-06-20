@@ -22,6 +22,9 @@ function createApp() {
     app.post('/message', addMessage);
     app.use(errorHandler);
 
+    var cleanInactiveUsersInterval = 30000;
+    setInterval(cleanInactiveUsers, cleanInactiveUsersInterval);
+
     function queryUsersHandler(req, res) {
         var usersForClient = [];
         // client side should only know its own id
@@ -71,6 +74,13 @@ function createApp() {
     function errorHandler(err, req, res, next) {
         console.log(err);
         res.status(400).end();
+    }
+    
+    function cleanInactiveUsers() {
+        users = _.filter(users, function(user) {
+            var lastActiveMs = Date.now() - user.lastActiveMs;
+            return lastActiveMs < cleanInactiveUsersInterval;
+        });
     }
 
     return app;
