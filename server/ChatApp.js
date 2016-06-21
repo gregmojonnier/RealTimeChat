@@ -19,6 +19,7 @@ var messages = [];
 app.get('/users', queryUsersHandler);
 app.get('/messages', queryMessagesHandler);
 app.post('/user', addUserHandler);
+app.put('/user', refreshUserHandler);
 app.post('/message', addMessage);
 app.use(errorHandler);
 
@@ -51,6 +52,32 @@ function addUserHandler(req, res, next) {
     var userInfo = {name: req.body.name, id: uuid.v4(), lastActiveInMS: Date.now()};
     users.push(userInfo);
     res.status(201).json(userInfo);
+}
+
+function refreshUserHandler(req, res, next) {
+    if (!req.body || !req.body.id) {
+        next('body did not contain an id');
+        return;
+    }
+
+    if (refreshUserId(req.body.id)) {
+        res.status(200).end();
+        return;
+    }
+    else {
+        res.status(400).json({error:'invalid user'});
+    }
+}
+
+function refreshUserId(id) {
+    if (id) {
+        var user = _.find(users, {id});
+        if (user) {
+            user.lastActiveInMS = Date.now();
+            return true;
+        }
+    }
+    return false;
 }
 
 function addMessage(req, res, next) {

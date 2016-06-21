@@ -138,13 +138,35 @@ test('User expiration', function(t) {
                 t.isEqual(res.body.users.length, 1, 'able to add and then query a user');
             })
             .then(function() {
-                clock.tick(40000); // users should expire every 30 seconds
+                clock.tick(30000); // fast forward - users should expire every 30 seconds
                 return req.get('/users');
             })
             .then(function(res) {
                 t.isEqual(res.body.users.length, 0, 'after 30 seconds of inactivity, a user is removed');
+            })
+            .then(function() {
+                return addUserToChat(userInfo, req);
+            })
+            .then(function() {
+                clock.tick(29000); // fast forward 29 seconds
+                return req.put('/user').send({'id': userInfo.id});
+            })
+            .then(function() {
+                clock.tick(20000); // fast forward 20 more, 29 + 20 > 30 seconds
+                return req.get('/users');
+            })
+            .then(function(res) {
+                t.isEqual(res.body.users.length, 1, 'PUT /user with a valid id refreshes their last active time, preventing removal');
                 clock.restore();
-            });
+            })
+            .then(function() {
+                return req.put('/user')
+                        .send({'id': 'bad_id'})
+                        .expect(400);
+            })
+            .then(function(res) {
+                t.isEqual(res.body.error, 'invalid user', 'PUT /user with an invalid id has error citing invalid user');
+            })
 });
 
 test('Message expiration', function(t) {
