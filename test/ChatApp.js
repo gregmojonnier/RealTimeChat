@@ -157,7 +157,6 @@ test('User expiration', function(t) {
             })
             .then(function(res) {
                 t.isEqual(res.body.users.length, 1, 'PUT /user with a valid id refreshes their last active time, preventing removal');
-                clock.restore();
             })
             .then(function() {
                 return req.put('/user')
@@ -166,6 +165,21 @@ test('User expiration', function(t) {
             })
             .then(function(res) {
                 t.isEqual(res.body.error, 'invalid user', 'PUT /user with an invalid id has error citing invalid user');
+                clock.tick(60000); // expire all users
+            })
+            .then(function(res) {
+                return addUserToChat(userInfo, req);
+            })
+            .then(function() {
+                clock.tick(29000); // fast forward 29 seconds
+                return addMessageForId(userInfo.id, 'hello world', req);
+            })
+            .then(function() {
+                clock.tick(20000); // fast forward 20 more, 29 + 20 > 30 seconds
+                return req.get('/users');
+            })
+            .then(function(res) {
+                t.isEqual(res.body.users.length, 1, 'POST /message for a user also refreshes their last active time, preventing removal');
             })
 });
 

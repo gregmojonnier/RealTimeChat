@@ -20,7 +20,7 @@ app.get('/users', queryUsersHandler);
 app.get('/messages', queryMessagesHandler);
 app.post('/user', addUserHandler);
 app.put('/user', refreshUserHandler);
-app.post('/message', addMessage);
+app.post('/message', addMessageHandler);
 app.use(errorHandler);
 
 var cleanInactiveUsersInterval = 30000; // 30 seconds
@@ -60,7 +60,7 @@ function refreshUserHandler(req, res, next) {
         return;
     }
 
-    if (refreshUserId(req.body.id)) {
+    if (refreshUser(getUserById(req.body.id))) {
         res.status(200).end();
         return;
     }
@@ -69,18 +69,23 @@ function refreshUserHandler(req, res, next) {
     }
 }
 
-function refreshUserId(id) {
-    if (id) {
-        var user = _.find(users, {id});
-        if (user) {
-            user.lastActiveInMS = Date.now();
-            return true;
-        }
+function refreshUser(user) {
+    if (user) {
+        user.lastActiveInMS = Date.now();
+        return true;
     }
     return false;
 }
 
-function addMessage(req, res, next) {
+function getUserById(id) {
+    var user;
+    if (id) {
+        user = _.find(users, {id});
+    }
+    return user;
+}
+
+function addMessageHandler(req, res, next) {
     if (!req.body) {
         next('request body missing');
         return;
@@ -91,9 +96,10 @@ function addMessage(req, res, next) {
         next('request body missing message');
         return;
     }
-    var user = _.find(users, {id:req.body.id});
+    var user = getUserById(req.body.id);
     if (user) {
         messages.push({name: user.name, message: req.body.message, time: Date()});
+        refreshUser(user);
         res.status(201).end();
     }
     else {
