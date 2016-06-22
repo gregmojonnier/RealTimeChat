@@ -7,21 +7,14 @@ html(lang="en")
             var regLi = $("#register-li");
             var activeUsersLi = $("#active-users-li");
             var chatLi = $("#chat-li");
-            regLi.click(function() {
-                activeUsersLi.removeClass("active");
-                chatLi.removeClass("active");
+            var path = $(location).attr('pathname');
+            if (path == "/") {
                 regLi.addClass("active");
-            });
-            activeUsersLi.click(function() {
-                regLi.removeClass("active");
-                chatLi.removeClass("active");
+            } else if (path == "/active-users") {
                 activeUsersLi.addClass("active");
-            });
-            chatLi.click(function() {
-                activeUsersLi.removeClass("active");
-                regLi.removeClass("active");
+            } else if (path == "/chat") {
                 chatLi.addClass("active");
-            });
+            }
         });
         
     head
@@ -29,7 +22,7 @@ html(lang="en")
 
     nav
         ul.nav.nav-tabs
-            li.active#register-li(role="presentation")
+            li#register-li(role="presentation")
                 a#register-a(href="/") Register
             li#active-users-li(role="presentation")
                 a#active-users-a(href="/active-users") Active Users
