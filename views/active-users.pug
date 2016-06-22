@@ -1,0 +1,11 @@
+include header
+body
+    div.container
+        div.row
+            div.col-md-12
+                if users
+                    ul.list-group
+                    each val in users
+                        li.list-group-item val.name
+                else
+                    h1 No users currently active :(

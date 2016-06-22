@@ -2,14 +2,36 @@ doctype html
 html(lang="en")
     link(rel="stylesheet", href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css")
     script(src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.2/jquery.min.js")
+    script.
+        $(document).ready(function() {
+            var regLi = $("#register-li");
+            var activeUsersLi = $("#active-users-li");
+            var chatLi = $("#chat-li");
+            regLi.click(function() {
+                activeUsersLi.removeClass("active");
+                chatLi.removeClass("active");
+                regLi.addClass("active");
+            });
+            activeUsersLi.click(function() {
+                regLi.removeClass("active");
+                chatLi.removeClass("active");
+                activeUsersLi.addClass("active");
+            });
+            chatLi.click(function() {
+                activeUsersLi.removeClass("active");
+                regLi.removeClass("active");
+                chatLi.addClass("active");
+            });
+        });
+        
     head
         title Ultimate Chat App!
 
     nav
         ul.nav.nav-tabs
-            li.active(role="presentation")
-                a(href="#") Register
-            li(role="presentation")
-                a(href="/active-users") Active Users
-            li.disabled(role="presentation")
-                a Chat
+            li.active#register-li(role="presentation")
+                a#register-a(href="/") Register
+            li#active-users-li(role="presentation")
+                a#active-users-a(href="/active-users") Active Users
+            li.disabled#chat-li(role="presentation")
+                a#chat-a Chat

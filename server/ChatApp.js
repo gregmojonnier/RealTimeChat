@@ -18,6 +18,7 @@ var users = [];
 var messages = [];
 
 app.get('/', renderIndexHandler);
+app.get('/active-users', renderActiveUsersHandler);
 app.get('/users', queryUsersHandler);
 app.get('/messages', queryMessagesHandler);
 app.post('/user', addUserHandler);
@@ -32,6 +33,10 @@ setInterval(cleanStaleMessages, cleanStaleMessagesInterval);
 
 function renderIndexHandler(req, res) {
     res.render('index', {});
+}
+
+function renderActiveUsersHandler(req, res) {
+    res.render('active-users', users);
 }
 
 function queryUsersHandler(req, res) {
