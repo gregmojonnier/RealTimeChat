@@ -31,7 +31,7 @@ setInterval(cleanInactiveUsers, cleanInactiveUsersInterval);
 setInterval(cleanStaleMessages, cleanStaleMessagesInterval);
 
 function renderIndexHandler(req, res) {
-    res.render('index', {title: 'Example title', message: 'Example message'});
+    res.render('index', {});
 }
 
 function queryUsersHandler(req, res) {

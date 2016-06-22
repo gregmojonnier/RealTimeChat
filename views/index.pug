@@ -1,6 +1,11 @@
-doctype html
-html(lang="en")
-    head
-        title= title
-    body
-        h1= message
+include header
+body
+    div.container
+        div.row
+            div.col-md-12
+                form.navbar-form.navbar-left
+                    div.form-group
+                        label(for="user") Choose your...  
+                        input.form-control#user(type="text", placeholder="User name")
+                    button.btn.btn-default(type="submit") Join
+
