@@ -12,10 +12,12 @@ if (process.env.NODE_ENV !== 'test') {
 }
 
 app.use(bodyParser.json());
+app.set('view engine', 'pug');
 
 var users = [];
 var messages = [];
 
+app.get('/', renderIndexHandler);
 app.get('/users', queryUsersHandler);
 app.get('/messages', queryMessagesHandler);
 app.post('/user', addUserHandler);
@@ -27,6 +29,10 @@ var cleanInactiveUsersInterval = 30000; // 30 seconds
 var cleanStaleMessagesInterval = 60000 * 5; // 5 minutes
 setInterval(cleanInactiveUsers, cleanInactiveUsersInterval);
 setInterval(cleanStaleMessages, cleanStaleMessagesInterval);
+
+function renderIndexHandler(req, res) {
+    res.render('index', {title: 'Example title', message: 'Example message'});
+}
 
 function queryUsersHandler(req, res) {
     var usersForClient = [];
