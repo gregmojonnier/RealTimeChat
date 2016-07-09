@@ -9,13 +9,42 @@ script.
         var activeUsersLi = $("#active-users-li");
         var chatLi = $("#chat-li");
 
-        configureButtonsBasedOnPath($(location).attr('pathname'));
+        configurePageBasedOnPath($(location).attr('pathname'));
 
-        function chatIsReadyButtonState() {
-            chatLi.removeClass("disabled");
-            registerLi.addClass("disabled");
-            $("#register-a").attr('href', '');
-            $("#chat-a").attr('href', '/chat');
+        function configurePageBasedOnPath(path) {
+            var cookies = getChatCookies();
+            var isLoggedIn = cookies.id && cookies.name;
+
+            if (path == "/") {
+                setIndexPageButtonState(isLoggedIn);
+            } else if (path == "/active-users") {
+                setActiveUsersPageButtonState(isLoggedIn);
+            } else if (path == "/chat") {
+                setChatPageButtonState(isLoggedIn);
+            }
+        }
+
+        function setIndexPageButtonState(isLoggedIn) {
+            registerLi.addClass("active");
+            if (isLoggedIn) {
+                $("#user").hide();
+                $("#userlabel").text("Welcome back " + cookies.name + "!");
+                $("#join").hide();
+            }
+        }
+
+        function setActiveUsersPageButtonState(isLoggedIn) {
+            activeUsersLi.addClass("active");
+            if (isLoggedIn) {
+                chatIsReadyButtonState();
+            }
+        }
+
+        function setChatPageButtonState(isLoggedIn) {
+            chatLi.addClass("active");
+            if (isLoggedIn) {
+                chatIsReadyButtonState();
+            }
         }
 
         function getChatCookies() {
@@ -31,28 +60,11 @@ script.
             return cookies;
         }
 
-        function configureButtonsBasedOnPath(path) {
-            var cookies = getChatCookies();
-            var cookiesReady = cookies.id && cookies.name;
-
-            if (path == "/") {
-                registerLi.addClass("active");
-                if (cookiesReady) {
-                    $("#user").hide();
-                    $("#userlabel").text("Welcome back " + cookies.name + "!");
-                    $("#join").hide();
-                }
-            } else if (path == "/active-users") {
-                activeUsersLi.addClass("active");
-                if (cookiesReady) {
-                    chatIsReadyButtonState();
-                }
-            } else if (path == "/chat") {
-                chatLi.addClass("active");
-                if (cookiesReady) {
-                    chatIsReadyButtonState();
-                }
-            }
+        function chatIsReadyButtonState() {
+            chatLi.removeClass("disabled");
+            registerLi.addClass("disabled");
+            $("#register-a").attr('href', '');
+            $("#chat-a").attr('href', '/chat');
         }
 
         $("#join").click(function() {
