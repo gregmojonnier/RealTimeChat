@@ -2,21 +2,8 @@ doctype html
 html(lang="en")
     link(rel="stylesheet", href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css")
     script(src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.2/jquery.min.js")
-    script.
-        $(document).ready(function() {
-            var regLi = $("#register-li");
-            var activeUsersLi = $("#active-users-li");
-            var chatLi = $("#chat-li");
-            var path = $(location).attr('pathname');
-            if (path == "/") {
-                regLi.addClass("active");
-            } else if (path == "/active-users") {
-                activeUsersLi.addClass("active");
-            } else if (path == "/chat") {
-                chatLi.addClass("active");
-            }
-        });
-        
+    script(src="//cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js")
+    include header_js
     head
         title Ultimate Chat App!
 

@@ -1,0 +1,64 @@
+script.
+    $(document).ready(function() {
+        var regLi = $("#register-li");
+        var activeUsersLi = $("#active-users-li");
+        var chatLi = $("#chat-li");
+        var path = $(location).attr('pathname');
+        var cookies = getChatCookies();
+        var cookiesReady = cookies.id && cookies.name;
+        if (path == "/") {
+            regLi.addClass("active");
+            if (cookiesReady) {
+                $("#user").hide();
+                $("#userlabel").text("Welcome back " + cookies.name + "!");
+                $("#join").hide();
+            }
+        } else if (path == "/active-users") {
+            activeUsersLi.addClass("active");
+            if (cookiesReady) {
+                chatIsReadyButtonState();
+            }
+        } else if (path == "/chat") {
+            chatLi.addClass("active");
+            if (cookiesReady) {
+                chatIsReadyButtonState();
+            }
+        }
+
+        function chatIsReadyButtonState() {
+            chatLi.removeClass("disabled");
+            regLi.addClass("disabled");
+            $("#register-a").attr('href', '');
+            $("#chat-a").attr('href', '/chat');
+        }
+
+        function getChatCookies() {
+            var id = $.cookie('_chatId');
+            var name = $.cookie('_chatUser');
+            var cookies = {};
+            if (id) {
+                cookies.id = id;
+            }
+            if (name) {
+                cookies.name = name;
+            }
+            return cookies;
+        }
+
+        $("#join").click(function() {
+            var user = $("#user").val();
+            if (user) {
+                $.post("/user", {'name': user}, function(res) {
+                    var data = res;
+                    $.cookie('_chatUser', data.name);
+                    $.cookie('_chatId', data.id);
+                    window.location.replace('/chat');
+                })
+                .fail(function(res) {
+                    alert("Unable to join chat at this time :(");
+                });
+            } else {
+                alert("You must enter a name to chat!");
+            }
+        });
+    });
