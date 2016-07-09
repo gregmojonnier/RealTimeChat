@@ -9,14 +9,41 @@ script.
         var activeUsersLi = $("#active-users-li");
         var chatLi = $("#chat-li");
 
+        // verify with server current user(set through cookies) is still valid
+        verifyCurrentUser();
         configurePageBasedOnPath($(location).attr('pathname'));
+
+        function verifyCurrentUser() {
+            var cookies = getChatCookies();
+            var isLoggedIn = cookies.id && cookies.name;
+            if (isLoggedIn) {
+                $.ajax({
+                    url: '/user',
+                    type: 'PUT',
+                    data: {'id': cookies.id},
+                    success: function(result) {
+                        // repeatedly verify ourselves, which also happens to refersh the user on the server so we don't expire
+                        // this way a user will only expire if they actually leave the page
+                        setInterval(verifyCurrentUser, 25000);
+                    },
+                    error: function(result) {
+                        $.removeCookie(chatUserCookieName);
+                        $.removeCookie(chatUserCookieId);
+                    }
+                });
+            }
+        }
 
         function configurePageBasedOnPath(path) {
             var cookies = getChatCookies();
             var isLoggedIn = cookies.id && cookies.name;
 
             if (path == "/") {
-                setIndexPageButtonState(isLoggedIn);
+                if (isLoggedIn)
+                    window.location.replace('/chat');
+                else
+                    registerLi.addClass("active");
+                    setIndexPageButtonListeners();
             } else if (path == "/active-users") {
                 setActiveUsersPageButtonState(isLoggedIn);
             } else if (path == "/chat") {
@@ -24,13 +51,23 @@ script.
             }
         }
 
-        function setIndexPageButtonState(isLoggedIn) {
-            registerLi.addClass("active");
-            if (isLoggedIn) {
-                $("#user").hide();
-                $("#userlabel").text("Welcome back " + cookies.name + "!");
-                $("#join").hide();
-            }
+        function setIndexPageButtonListeners() {
+            $("#join").click(function() {
+                var user = $("#user").val();
+                if (user) {
+                    $.post("/user", {'name': user}, function(res) {
+                        var data = res;
+                        $.cookie(chatUserCookieName, data.name);
+                        $.cookie(chatUserCookieId, data.id);
+                        window.location.replace('/chat');
+                    })
+                    .fail(function(res) {
+                        alert("Unable to join chat at this time :(");
+                    });
+                } else {
+                    alert("You must enter a name to chat!");
+                }
+            });
         }
 
         function setActiveUsersPageButtonState(isLoggedIn) {
@@ -63,24 +100,7 @@ script.
         function chatIsReadyButtonState() {
             chatLi.removeClass("disabled");
             registerLi.addClass("disabled");
-            $("#register-a").attr('href', '');
+            $("#register-a").removeAttr('href');
             $("#chat-a").attr('href', '/chat');
         }
-
-        $("#join").click(function() {
-            var user = $("#user").val();
-            if (user) {
-                $.post("/user", {'name': user}, function(res) {
-                    var data = res;
-                    $.cookie(chatUserCookieName, data.name);
-                    $.cookie(chatUserCookieId, data.id);
-                    window.location.replace('/chat');
-                })
-                .fail(function(res) {
-                    alert("Unable to join chat at this time :(");
-                });
-            } else {
-                alert("You must enter a name to chat!");
-            }
-        });
     });
