@@ -12,6 +12,7 @@ if (process.env.NODE_ENV !== 'test') {
 }
 
 app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 app.set('view engine', 'pug');
 
 var users = [];
@@ -19,6 +20,7 @@ var messages = [];
 
 app.get('/', renderIndexHandler);
 app.get('/active-users', renderActiveUsersHandler);
+app.get('/chat', renderChatHandler);
 app.get('/users', queryUsersHandler);
 app.get('/messages', queryMessagesHandler);
 app.post('/user', addUserHandler);
@@ -36,7 +38,11 @@ function renderIndexHandler(req, res) {
 }
 
 function renderActiveUsersHandler(req, res) {
-    res.render('active-users', users);
+    res.render('active-users', {users});
+}
+
+function renderChatHandler(req, res) {
+    res.render('chat', {users});
 }
 
 function queryUsersHandler(req, res) {
