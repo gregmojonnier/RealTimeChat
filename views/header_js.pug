@@ -47,7 +47,12 @@ script.
             } else if (path == "/active-users") {
                 setActiveUsersPageButtonState(isLoggedIn);
             } else if (path == "/chat") {
-                setChatPageButtonState(isLoggedIn);
+                if (isLoggedIn) {
+                    chatLi.addClass("active");
+                    chatIsReadyButtonState();
+                } else {
+                    window.location.replace('/');
+                }
             }
         }
 
@@ -72,13 +77,6 @@ script.
 
         function setActiveUsersPageButtonState(isLoggedIn) {
             activeUsersLi.addClass("active");
-            if (isLoggedIn) {
-                chatIsReadyButtonState();
-            }
-        }
-
-        function setChatPageButtonState(isLoggedIn) {
-            chatLi.addClass("active");
             if (isLoggedIn) {
                 chatIsReadyButtonState();
             }
