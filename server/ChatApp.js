@@ -42,7 +42,7 @@ function renderActiveUsersHandler(req, res) {
 }
 
 function renderChatHandler(req, res) {
-    res.render('chat', {users});
+    res.render('chat', {messages});
 }
 
 function queryUsersHandler(req, res) {

@@ -2,11 +2,10 @@ include header
 body
     div.container
         div.row
-            if users
+            if users && users.length
                 div.col-md-12
                     ul.list-group
                             each user in users
                                 li.list-group-item= user.name
             else
                 h1 No users currently active :(
-                // TODO: look into why this else doesn't seem to work
