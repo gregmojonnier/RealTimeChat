@@ -50,6 +50,7 @@ script.
                 if (isLoggedIn) {
                     chatLi.addClass("active");
                     chatIsReadyButtonState();
+                    setChatPageButtonListeners();
                 } else {
                     window.location.replace('/');
                 }
@@ -72,6 +73,19 @@ script.
                 } else {
                     alert("You must enter a name to chat!");
                 }
+            });
+        }
+
+        function setChatPageButtonListeners() {
+            $("#send").click(function() {
+                var message = $("#message-input").val();
+                var userId = getChatCookies().id;
+                $.post("/message", {'id': userId, message}, function(res) {
+                    window.location.replace('/chat');
+                })
+                .fail(function(res) {
+                    alert("Message send failure :(");
+                });
             });
         }
 
