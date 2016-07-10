@@ -6,7 +6,6 @@ script.
 
         // page buttons at the top list items
         var registerLi = $("#register-li");
-        var activeUsersLi = $("#active-users-li");
         var chatLi = $("#chat-li");
 
         // verify with server current user(set through cookies) is still valid
@@ -43,8 +42,6 @@ script.
                 else
                     registerLi.addClass("active");
                     setIndexPageButtonListeners();
-            } else if (path == "/active-users") {
-                setActiveUsersPageButtonState(isLoggedIn);
             } else if (path == "/chat") {
                 if (isLoggedIn) {
                     chatLi.addClass("active");
@@ -93,13 +90,6 @@ script.
                 window.location.replace('/');
                 // TODO: add new route server side to accept explicit logout instead of just waiting for timeout
             });
-        }
-
-        function setActiveUsersPageButtonState(isLoggedIn) {
-            activeUsersLi.addClass("active");
-            if (isLoggedIn) {
-                chatIsReadyButtonState();
-            }
         }
 
         function addChatSpecificNavBarItems(userName) {

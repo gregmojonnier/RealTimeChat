@@ -1,18 +1,24 @@
 include header
 body
     div.container
-        div.row(style="border: 2px solid; min-height: 300px")
-            if messages && messages.length
-                each message in messages
-                    div.row
-                        div.col-md-4
-                            li.list-group-item= message.name
-                        div.col-md-8
-                            li.list-group-item= message.message
-                //messages.push({name: user.name, message: req.body.message, time: Date()});
+        div.row
+            div.col-md-10(style="border: 2px solid; min-height: 300px")
+                if messages && messages.length
+                    each message in messages
+                        div.row
+                            div.col-md-4
+                                li.list-group-item= message.name
+                            div.col-md-8
+                                li.list-group-item= message.message
+                    //messages.push({name: user.name, message: req.body.message, time: Date()});
+            div.col-md-2(style="border: 2px solid; min-height: 300px")
+                h3(style="text-decoration:underline") Active Users
+                if users && users.length
+                    each user in users
+                        p= user.name
         div.row
             div.col-md-12
                 form.navbar-form.navbar-left(style="width: 100%")
-                    div.form-group
-                        input.form-control#message-input(type="text", placeholder="Enter message...")
-                    button.btn.btn-default#send Send
+                    div.form-group(style="width: 100%")
+                        input.form-control#message-input(type="text", placeholder="Enter message...", style="width: 700px; display:inline-block")
+                        button.btn.btn-default#send(style="display:inline-block") Send

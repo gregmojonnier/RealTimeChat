@@ -42,10 +42,16 @@ function renderActiveUsersHandler(req, res) {
 }
 
 function renderChatHandler(req, res) {
-    res.render('chat', {messages});
+    var usersForClient = getUsersListForClient();
+    res.render('chat', {messages, users:usersForClient});
 }
 
 function queryUsersHandler(req, res) {
+    var usersForClient = getUsersListForClient();
+    res.status(200).json({users:usersForClient});
+}
+
+function getUsersListForClient() {
     var usersForClient = [];
     // client side should only know its own id
     // and we'll calculate each user's last active time
@@ -54,7 +60,7 @@ function queryUsersHandler(req, res) {
         cleanedUser.lastActiveInMS = Date.now() - cleanedUser.lastActiveInMS;
         usersForClient.push(cleanedUser);
     });
-    res.status(200).json({users:usersForClient});
+    return usersForClient;
 }
 
 function queryMessagesHandler(req, res) {
