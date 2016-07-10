@@ -10,9 +10,10 @@ body
                                 li.list-group-item= message.name
                             div.col-md-8
                                 li.list-group-item= message.message
-                    //messages.push({name: user.name, message: req.body.message, time: Date()});
             div.col-md-2(style="border: 2px solid; min-height: 300px")
-                h3(style="text-decoration:underline") Active Users
+                h3(style="text-decoration:underline")
+                | Active Users - 
+                = users ? users.length : 0
                 if users && users.length
                     each user in users
                         p= user.name
