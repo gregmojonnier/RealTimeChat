@@ -18,43 +18,6 @@ test('POST /user - a name is all that\'s needed to add a user', function(t) {
             t.isEqual(body.name, 'foobar', 'response name matches what we sent');
             t.true(isValidUuid(body.id), 'response id is a valid uuid');
         })
-        .then(function(res) {
-            return req.get('/users');
-        })
-        .then(function(res) {
-            console.log('Added user can then be queried with GET /users');
-            var body = res.body;
-            t.ok(body.users, 'response has a users key');
-            t.true(_.find(body.users, {'name':'foobar'}), 'found name in users array');
-        });
-});
-
-test('GET /users - querying all users information', function(t) {
-    var req = freshChatAppRequest();
-    return req
-        .get('/users')
-        .expect('Content-Type', /json/)
-        .expect(200)
-        .then(function(res) {
-            var body = res.body;
-            t.ok(body.users, 'response has users key');
-            t.ok(_.isArray(body.users), 'users is an array');
-            t.isEqual(body.users.length, 0, 'starts with 0 users');
-        })
-        .then(function() {
-            return addUserToChat({'name':'foobar'}, req);
-        })
-        .then(function() {
-            return req.get('/users');
-        })
-        .then(function(res) {
-            var body = res.body;
-            t.isEqual(body.users.length, 1, 'adding a user results in the users array growing by 1');
-            var user = body.users[0];
-            t.ok(_.isObject(user), 'each user in the array is an object');
-            t.ok(user.name, 'user has a name key');
-            t.ok(user.lastActiveInMS, 'user has a lastActiveInMS key');
-        });
 });
 
 test('POST /message - can be used to add a message', function(t) {
@@ -123,64 +86,6 @@ test('GET /messages - can be used to query messages', function(t) {
                 t.ok(message.message, 'each message has a message');
                 t.ok(message.time, 'each message has a time');
             });
-});
-
-test('User expiration', function(t) {
-    var userInfo = {'name': 'foobar'};
-    var clock = sinon.useFakeTimers();
-
-    var req = freshChatAppRequest();
-    return addUserToChat(userInfo, req)
-            .then(function() {
-                return req.get('/users');
-            })
-            .then(function(res) {
-                t.isEqual(res.body.users.length, 1, 'able to add and then query a user');
-            })
-            .then(function() {
-                clock.tick(30000); // fast forward - users should expire every 30 seconds
-                return req.get('/users');
-            })
-            .then(function(res) {
-                t.isEqual(res.body.users.length, 0, 'after 30 seconds of inactivity, a user is removed');
-            })
-            .then(function() {
-                return addUserToChat(userInfo, req);
-            })
-            .then(function() {
-                clock.tick(29000); // fast forward 29 seconds
-                return req.put('/user').send({'id': userInfo.id});
-            })
-            .then(function() {
-                clock.tick(20000); // fast forward 20 more, 29 + 20 > 30 seconds
-                return req.get('/users');
-            })
-            .then(function(res) {
-                t.isEqual(res.body.users.length, 1, 'PUT /user with a valid id refreshes their last active time, preventing removal');
-            })
-            .then(function() {
-                return req.put('/user')
-                        .send({'id': 'bad_id'})
-                        .expect(400);
-            })
-            .then(function(res) {
-                t.isEqual(res.body.error, 'invalid user', 'PUT /user with an invalid id has error citing invalid user');
-                clock.tick(60000); // expire all users
-            })
-            .then(function(res) {
-                return addUserToChat(userInfo, req);
-            })
-            .then(function() {
-                clock.tick(29000); // fast forward 29 seconds
-                return addMessageForId(userInfo.id, 'hello world', req);
-            })
-            .then(function() {
-                clock.tick(20000); // fast forward 20 more, 29 + 20 > 30 seconds
-                return req.get('/users');
-            })
-            .then(function(res) {
-                t.isEqual(res.body.users.length, 1, 'POST /message for a user also refreshes their last active time, preventing removal');
-            })
 });
 
 test('Message expiration', function(t) {

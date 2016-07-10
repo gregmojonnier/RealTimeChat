@@ -21,7 +21,6 @@ var messages = [];
 app.get('/', renderIndexHandler);
 app.get('/active-users', renderActiveUsersHandler);
 app.get('/chat', renderChatHandler);
-app.get('/users', queryUsersHandler);
 app.get('/messages', queryMessagesHandler);
 app.post('/user', addUserHandler);
 app.put('/user', refreshUserHandler);
@@ -44,11 +43,6 @@ function renderActiveUsersHandler(req, res) {
 function renderChatHandler(req, res) {
     var usersForClient = getUsersListForClient();
     res.render('chat', {messages, users:usersForClient});
-}
-
-function queryUsersHandler(req, res) {
-    var usersForClient = getUsersListForClient();
-    res.status(200).json({users:usersForClient});
 }
 
 function getUsersListForClient() {
