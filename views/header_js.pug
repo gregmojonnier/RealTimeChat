@@ -27,8 +27,7 @@ script.
                         setInterval(verifyCurrentUser, 25000);
                     },
                     error: function(result) {
-                        $.removeCookie(chatUserCookieName);
-                        $.removeCookie(chatUserCookieId);
+                        logUserOut();
                     }
                 });
             }
@@ -50,6 +49,7 @@ script.
                 if (isLoggedIn) {
                     chatLi.addClass("active");
                     chatIsReadyButtonState();
+                    addLogoutButton();
                     setChatPageButtonListeners();
                 } else {
                     window.location.replace('/');
@@ -87,6 +87,12 @@ script.
                     alert("Message send failure :(");
                 });
             });
+
+            $("#logout-li").click(function() {
+                logUserOut();
+                window.location.replace('/');
+                // TODO: add new route server side to accept explicit logout instead of just waiting for timeout
+            });
         }
 
         function setActiveUsersPageButtonState(isLoggedIn) {
@@ -94,6 +100,17 @@ script.
             if (isLoggedIn) {
                 chatIsReadyButtonState();
             }
+        }
+
+        function addLogoutButton() {
+            $("#nav-ul").append("<li id=\"logout-li\" role=\"presentation\" style=\"float:right\">" +
+                                    "<a id=\"logout-a\">Logout</a>" +
+                                "</li>");
+        }
+
+        function logUserOut() {
+            $.removeCookie(chatUserCookieName);
+            $.removeCookie(chatUserCookieId);
         }
 
         function getChatCookies() {
