@@ -3,6 +3,7 @@ var bodyParser = require('body-parser');
 var uuid = require('node-uuid');
 var morgan = require('morgan');
 var _ = require('underscore');
+var path = require('path');
 
 var app = express();
 module.exports = app;
@@ -18,6 +19,7 @@ app.set('view engine', 'pug');
 var users = [];
 var messages = [];
 
+app.use(express.static(path.join(__dirname, '..', '/public')));
 app.get('/', renderIndexHandler);
 app.get('/active-users', renderActiveUsersHandler);
 app.get('/chat', renderChatHandler);
