@@ -49,7 +49,7 @@ script.
                 if (isLoggedIn) {
                     chatLi.addClass("active");
                     chatIsReadyButtonState();
-                    addLogoutButton();
+                    addChatSpecificNavBarItems(cookies.name);
                     setChatPageButtonListeners();
                 } else {
                     window.location.replace('/');
@@ -102,10 +102,12 @@ script.
             }
         }
 
-        function addLogoutButton() {
-            $("#nav-ul").append("<li id=\"logout-li\" role=\"presentation\" style=\"float:right\">" +
+        function addChatSpecificNavBarItems(userName) {
+            var navUl = $("#nav-ul");
+            navUl.append("<li id=\"logout-li\" role=\"presentation\" style=\"float:right\">" +
                                     "<a id=\"logout-a\">Logout</a>" +
-                                "</li>");
+                         "</li>");
+            navUl.append("<li class=\"disabled\" role=\"presentation\" style=\"float:right\"><a>Welcome " + userName + "!</a></li>");
         }
 
         function logUserOut() {
