@@ -113,6 +113,43 @@ test('Message expiration', function(t) {
             });
 });
 
+test('POST /logout - can be used to log a user out', function(t) {
+    var userInfo = {'name':'foobar'};
+    var req = freshChatAppRequest();
+    return req
+            .post('/logout')
+            .send({'id':'some_fake_id'})
+            .expect(403)
+            .then(function(res) {
+                var body = res.body;
+                t.ok(body.error, 'response has an error key when an unknown user id is given');
+            })
+            .then(function() {
+                return addUserToChat(userInfo, req); // populates userInfo w/a valid id
+            })
+            .then(function() {
+                return addMessageForId(userInfo.id, 'hello world', req)
+                        .expect(201);
+            })
+            .then(function() {
+                return req
+                        .post('/logout')
+                        .send({'id': userInfo.id})
+                        .expect(200)
+                        .expect(function() {
+                            t.pass('logging a valid user out returns 200');
+                        });
+            })
+            .then(function() {
+                return addMessageForId(userInfo.id, 'hello world', req)
+                        .expect(403);
+            })
+            .then(function(res) {
+                var body = res.body;
+                t.ok(body.error, 'response has an error key when trying to add a message for a user that just logged out');
+            })
+});
+
 //
 // helper functions to simplify some actions in tests that are not the main focus in the tests
 //

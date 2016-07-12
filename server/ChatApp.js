@@ -27,6 +27,7 @@ app.get('/messages', queryMessagesHandler);
 app.post('/user', addUserHandler);
 app.put('/user', refreshUserHandler);
 app.post('/message', addMessageHandler);
+app.post('/logout', logOutHandler);
 app.use(errorHandler);
 
 var cleanInactiveUsersInterval = 30000; // 30 seconds
@@ -104,6 +105,18 @@ function getUserById(id) {
     return user;
 }
 
+function deleteUserById(id) {
+    var idx = _.findIndex(users, function(user) {
+                    return id == user.id;
+                });
+    if (idx >= 0) {
+        users.splice(idx);
+        return true;
+    } else {
+        return false;
+    }
+}
+
 function addMessageHandler(req, res, next) {
     if (!req.body) {
         next('request body missing');
@@ -122,6 +135,22 @@ function addMessageHandler(req, res, next) {
         res.status(201).end();
     }
     else {
+        res.status(403).json({error:'invalid user'});
+    }
+}
+
+function logOutHandler(req, res, next) {
+    if (!req.body) {
+        next('request body missing');
+        return;
+    } else if (!req.body.id) {
+        next('request body missing id');
+        return;
+    }
+
+    if (deleteUserById(req.body.id)) {
+        res.status(200).end();
+    } else {
         res.status(403).json({error:'invalid user'});
     }
 }
