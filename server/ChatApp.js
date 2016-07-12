@@ -60,8 +60,21 @@ function getUsersListForClient() {
     return usersForClient;
 }
 
-function queryMessagesHandler(req, res) {
-    res.status(200).json({messages});
+function queryMessagesHandler(req, res, next) {
+    if (!req.body) {
+        next('request body missing');
+        return;
+    } else if (!req.body.id) {
+        next('request body missing id');
+        return;
+    }
+
+    var user = getUserById(req.body.id);
+    if (user) {
+        res.status(200).json({messages});
+    } else {
+        res.status(403).json({error:'invalid user'});
+    }
 }
 
 function addUserHandler(req, res, next) {

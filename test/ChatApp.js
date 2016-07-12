@@ -37,7 +37,8 @@ test('POST /message - can be used to add a message', function(t) {
                         });
             })
             .then(function() {
-                return req.get('/messages');
+                return req.get('/messages')
+                            .send({id: userInfo.id});
             })
             .then(function(res) {
                 t.ok(_.find(res.body.messages, {name: userInfo.name, message}), 'GET /messages contains the message we just added');
@@ -61,23 +62,39 @@ test('GET /messages - can be used to query messages', function(t) {
     var req = freshChatAppRequest();
     return req
             .get('/messages')
-            .expect('Content-Type', /json/)
-            .expect(200)
-            .expect({messages: []})
+            .expect(400)
+            .then(function() {
+                t.pass('We get 400 when trying to get messages without specifying a user id');
+                return req.get('/messages')
+                            .send({id: 'a_bad_id'})
+                            .expect(403);
+            })
             .then(function(res) {
-                var messages = res.body.messages;
-                t.ok(messages, 'response has a messages key');
-                t.ok(_.isArray(messages), 'messages is an array');
-                t.isEqual(messages.length, 0, 'starts with 0 messages');
+                var body = res.body;
+                t.ok(body.error, 'We get 403 and the response has an error when trying to get messages with a bad user id');
             })
             .then(function() {
                 return addUserToChat(userInfo, req);
             })
             .then(function() {
+                return req.get('/messages')
+                            .send({id: userInfo.id})
+                            .expect('Content-Type', /json/)
+                            .expect(200)
+                            .expect({messages: []})
+                            .then(function(res) {
+                                var messages = res.body.messages;
+                                t.ok(messages, 'A valid messages response has a messages key');
+                                t.ok(_.isArray(messages), 'messages is an array');
+                                t.isEqual(messages.length, 0, 'starts with 0 messages');
+                            })
+            })
+            .then(function() {
                 return addMessageForId(userInfo.id, 'hello world', req);
             })
             .then(function() {
-                return req.get('/messages');
+                return req.get('/messages')
+                            .send({id: userInfo.id});
             })
             .then(function(res) {
                 t.isEqual(res.body.messages.length, 1, 'adding a message results in the messages array growing by 1');
@@ -98,14 +115,19 @@ test('Message expiration', function(t) {
                 return addMessageForId(userInfo.id, 'hello world', req);
             })
             .then(function() {
-                return req.get('/messages');
+                return req.get('/messages')
+                            .send({id: userInfo.id});
             })
             .then(function(res) {
                 t.isEqual(res.body.messages.length, 1, 'able to add a user and a message from that user');
             })
             .then(function() {
                 clock.tick(60000*5); // messages should expire every 5 minutes
-                return req.get('/messages');
+                return addUserToChat(userInfo, req); // readd user as valid user is required to get messages & we've expired in this time
+            })
+            .then(function() {
+                return req.get('/messages')
+                            .send({id: userInfo.id});
             })
             .then(function(res) {
                 t.isEqual(res.body.messages.length, 0, 'after 5 mintues a message is cleaned up');
