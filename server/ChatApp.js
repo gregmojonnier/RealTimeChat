@@ -110,7 +110,7 @@ function deleteUserById(id) {
                     return id == user.id;
                 });
     if (idx >= 0) {
-        users.splice(idx);
+        users.splice(idx, 1);
         return true;
     } else {
         return false;

@@ -86,8 +86,6 @@ $(document).ready(function() {
 
         $("#logout-li").click(function() {
             logUserOut();
-            window.location.replace('/');
-            // TODO: add new route server side to accept explicit logout instead of just waiting for timeout
         });
     }
 
@@ -100,8 +98,12 @@ $(document).ready(function() {
     }
 
     function logUserOut() {
+        var id = getChatCookies().id;
         $.removeCookie(chatUserCookieName);
         $.removeCookie(chatUserCookieId);
+        $.post("/logout", {id}, function(res) {
+            window.location.replace('/');
+        })
     }
 
     function getChatCookies() {
