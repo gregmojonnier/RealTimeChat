@@ -2,14 +2,25 @@ include header
 body
     div.container
         div.row
-            div.col-md-10(style="border: 2px solid; min-height: 300px")
+            div.col-md-10#messages-col(style="border: 2px solid; min-height: 300px")
+                div.row(style="border: 2px solid;")
+                    div.col-md-2
+                        h3 Time
+                    div.col-md-2
+                        h3 Name
+                    div.col-md-8
+                        h3 Message
                 if messages && messages.length
                     each message in messages
-                        div.row
-                            div.col-md-4
-                                li.list-group-item= message.name
+                        div.row(style="border: 2px solid;")
+                            - var t = new Date(message.time);
+                            - var simpleTime = t.getDate() + "/" + t.getMonth() + " " + t.getHours() + ":" + t.getMinutes();
+                            div.col-md-2
+                                = simpleTime
+                            div.col-md-2
+                                = message.name
                             div.col-md-8
-                                li.list-group-item= message.message
+                                = message.message
             div.col-md-2(style="border: 2px solid; min-height: 300px")
                 h3(style="text-decoration:underline")
                 | Active Users - 

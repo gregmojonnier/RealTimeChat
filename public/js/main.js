@@ -23,6 +23,9 @@ $(document).ready(function() {
                     // repeatedly verify ourselves, which also happens to refersh the user on the server so we don't expire
                     // this way a user will only expire if they actually leave the page
                     setInterval(verifyCurrentUser, 25000);
+
+                    // poll and update messages/users
+                    setInterval(getLatestMessagesAndUsers, 5000);
                 },
                 error: function(result) {
                     logUserOut();
@@ -124,5 +127,36 @@ $(document).ready(function() {
         registerLi.addClass("disabled");
         $("#register-a").removeAttr('href');
         $("#chat-a").attr('href', '/chat');
+    }
+
+    function getLatestMessagesAndUsers() {
+        $.get("/messages", function( data ) {
+            var additionalMessages = "<h1>hi</h1>";
+            var messages = data.messages;
+            messages.forEach(function(message) {
+
+                // helper function to update these nested divs
+                function createDiv(content, classAttributes, style) {
+                    var newDiv = "<div class=\"" + classAttributes + "\" style=\"" + style + "\">";
+                    newDiv += content + "</div>";
+                    return newDiv;
+                }
+
+                // construct the updated message divs
+                var messageTime = new Date(message.time);
+                messageTime = messageTime.getDate() + "/" + messageTime.getMonth() + " " + messageTime.getHours() + ":" + messageTime.getMinutes();
+                var newMessageTimeDiv = createDiv(messageTime, "col-md-2", "");
+                var newMessageNameDiv = createDiv(message.name, "col-md-2", "");
+                var newMessageMessageDiv = createDiv(message.message, "col-md-8", "");
+                var newMessageRowContent = newMessageTimeDiv + newMessageNameDiv + newMessageMessageDiv;
+
+                var newMessageRowDiv = createDiv(newMessageRowContent, "row", "border: 2px solid;");
+                $("#messages-col").append(newMessageRowDiv);
+            });
+        })
+        .fail(function() {
+            alert("Unable to get the latest messages :(");
+        });
+        
     }
 });
