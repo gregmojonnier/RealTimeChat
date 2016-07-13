@@ -25,7 +25,6 @@ app.get('/active-users', renderActiveUsersHandler);
 app.get('/chat', renderChatHandler);
 app.get('/messages', queryMessagesHandler);
 app.post('/user', addUserHandler);
-app.put('/user', refreshUserHandler);
 app.post('/message', addMessageHandler);
 app.post('/logout', logOutHandler);
 app.use(errorHandler);
@@ -71,6 +70,7 @@ function queryMessagesHandler(req, res, next) {
 
     var user = getUserById(req.body.id);
     if (user) {
+        refreshUser(user);
         res.status(200).json({messages});
     } else {
         res.status(403).json({error:'invalid user'});
@@ -85,21 +85,6 @@ function addUserHandler(req, res, next) {
     var userInfo = {name: req.body.name, id: uuid.v4(), lastActiveInMS: Date.now()};
     users.push(userInfo);
     res.status(201).json(userInfo);
-}
-
-function refreshUserHandler(req, res, next) {
-    if (!req.body || !req.body.id) {
-        next('body did not contain an id');
-        return;
-    }
-
-    if (refreshUser(getUserById(req.body.id))) {
-        res.status(200).end();
-        return;
-    }
-    else {
-        res.status(400).json({error:'invalid user'});
-    }
 }
 
 function refreshUser(user) {
@@ -144,7 +129,6 @@ function addMessageHandler(req, res, next) {
     var user = getUserById(req.body.id);
     if (user) {
         messages.push({name: user.name, message: req.body.message, time: Date()});
-        refreshUser(user);
         res.status(201).end();
     }
     else {

@@ -135,6 +135,59 @@ test('Message expiration', function(t) {
             });
 });
 
+test('User expiration', function(t) {
+    var userInfo = {'name': 'foobar'};
+    var clock = sinon.useFakeTimers();
+
+    var req = freshChatAppRequest();
+    return addUserToChat(userInfo, req)
+            .then(function() {
+                return req.get('/messages')
+                            .send({id: userInfo.id})
+                            .expect(200)
+                            .then(function() {
+                                t.pass('A valid user gets 200 when trying to GET messages.');
+                            });
+            })
+            .then(function() {
+                clock.tick(31000); // users expire every 30 seconds
+            })
+            .then(function() {
+                return req.get('/messages')
+                            .send({id: userInfo.id})
+                            .expect(403)
+                            .then(function() {
+                                t.pass('After 30 seconds of inactivity a previously valid user gets 403 when trying to GET messages');
+                            });
+            })
+            .then(function() {
+                return addUserToChat(userInfo, req);
+            })
+            .then(function() {
+                clock.tick(29500); // users expire every 30 seconds, 1/2 second until expiration
+            })
+            .then(function() {
+                // GET /messages prevents user expiration
+                return req.get('/messages')
+                            .send({id: userInfo.id})
+                            .expect(200);
+            })
+            .then(function() {
+                clock.tick(29500); // 59 seconds have now passed since user added to chat
+            })
+            .then(function() {
+                return req.get('/messages')
+                            .send({id: userInfo.id})
+                            .expect(200)
+                            .then(function(res) {
+                                t.pass('GET /messages refreshes a user\'s 30 second expiration');
+                            });
+            })
+            .then(function() {
+                clock.restore();
+            });
+});
+
 test('POST /logout - can be used to log a user out', function(t) {
     var userInfo = {'name':'foobar'};
     var req = freshChatAppRequest();
