@@ -60,15 +60,12 @@ function getUsersListForClient() {
 }
 
 function queryMessagesHandler(req, res, next) {
-    if (!req.body) {
-        next('request body missing');
-        return;
-    } else if (!req.body.id) {
-        next('request body missing id');
+    if (!req.query.id) {
+        next('request query missing id');
         return;
     }
 
-    var user = getUserById(req.body.id);
+    var user = getUserById(req.query.id);
     if (user) {
         refreshUser(user);
         res.status(200).json({messages});

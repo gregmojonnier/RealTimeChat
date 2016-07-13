@@ -7,32 +7,7 @@ $(document).ready(function() {
     var registerLi = $("#register-li");
     var chatLi = $("#chat-li");
 
-    // verify with server current user(set through cookies) is still valid
-    verifyCurrentUser();
     configurePageBasedOnPath($(location).attr('pathname'));
-
-    function verifyCurrentUser() {
-        var cookies = getChatCookies();
-        var isLoggedIn = cookies.id && cookies.name;
-        if (isLoggedIn) {
-            $.ajax({
-                url: '/user',
-                type: 'PUT',
-                data: {'id': cookies.id},
-                success: function(result) {
-                    // repeatedly verify ourselves, which also happens to refersh the user on the server so we don't expire
-                    // this way a user will only expire if they actually leave the page
-                    setInterval(verifyCurrentUser, 25000);
-
-                    // poll and update messages/users
-                    setInterval(getLatestMessagesAndUsers, 5000);
-                },
-                error: function(result) {
-                    logUserOut();
-                }
-            });
-        }
-    }
 
     function configurePageBasedOnPath(path) {
         var cookies = getChatCookies();
@@ -50,6 +25,7 @@ $(document).ready(function() {
                 chatIsReadyButtonState();
                 addChatSpecificNavBarItems(cookies.name);
                 setChatPageButtonListeners();
+                setInterval(getLatestMessagesAndUsers, 5000);
             } else {
                 window.location.replace('/');
             }
@@ -130,7 +106,8 @@ $(document).ready(function() {
     }
 
     function getLatestMessagesAndUsers() {
-        $.get("/messages", function( data ) {
+        $.get("/messages", {id: getChatCookies().id})
+            .done(function( data ) {
             var additionalMessages = "<h1>hi</h1>";
             var messages = data.messages;
             messages.forEach(function(message) {
