@@ -138,7 +138,7 @@ $(document).ready(function() {
                         messageTime = messageTime.getDate() + "/" + messageTime.getMonth() + " " + messageTime.getHours() + ":" + messageTime.getMinutes();
                         var newMessageTimeDiv = createDiv(messageTime, "col-md-2", "");
                         var newMessageNameDiv = createDiv(message.name, "col-md-2", "");
-                        var newMessageMessageDiv = createDiv(message.message, "col-md-8", "");
+                        var newMessageMessageDiv = createDiv(message.message, "col-md-8", "word-break: break-all; word-wrap: break-word");
                         var newMessageRowContent = newMessageTimeDiv + newMessageNameDiv + newMessageMessageDiv;
 
                         var newMessageRowDiv = createDiv(newMessageRowContent, "row", "border: 2px solid;");
