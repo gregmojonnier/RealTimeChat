@@ -37,11 +37,11 @@ test('POST /message - can be used to add a message', function(t) {
                         });
             })
             .then(function() {
-                return req.get('/messages')
+                return req.get('/latest')
                             .query({id: userInfo.id});
             })
             .then(function(res) {
-                t.ok(_.find(res.body.messages, {name: userInfo.name, message}), 'GET /messages contains the message we just added');
+                t.ok(_.find(res.body.messages, {name: userInfo.name, message}), 'GET /latest contains the message we just added');
             })
             .then(function() {
                 return req
@@ -57,15 +57,15 @@ test('POST /message - can be used to add a message', function(t) {
             });
 });
 
-test('GET /messages - can be used to query messages', function(t) {
+test('GET /latest - can be used to query messages', function(t) {
     var userInfo = {'name':'foobar'};
     var req = freshChatAppRequest();
     return req
-            .get('/messages')
+            .get('/latest')
             .expect(400)
             .then(function() {
                 t.pass('We get 400 when trying to get messages without specifying a user id');
-                return req.get('/messages')
+                return req.get('/latest')
                             .query({id: 'a_bad_id'})
                             .expect(403);
             })
@@ -77,7 +77,7 @@ test('GET /messages - can be used to query messages', function(t) {
                 return addUserToChat(userInfo, req);
             })
             .then(function() {
-                return req.get('/messages')
+                return req.get('/latest')
                             .query({id: userInfo.id})
                             .expect('Content-Type', /json/)
                             .expect(200)
@@ -93,7 +93,7 @@ test('GET /messages - can be used to query messages', function(t) {
                 return addMessageForId(userInfo.id, 'hello world', req);
             })
             .then(function() {
-                return req.get('/messages')
+                return req.get('/latest')
                             .query({id: userInfo.id});
             })
             .then(function(res) {
@@ -115,7 +115,7 @@ test('Message expiration', function(t) {
                 return addMessageForId(userInfo.id, 'hello world', req);
             })
             .then(function() {
-                return req.get('/messages')
+                return req.get('/latest')
                             .query({id: userInfo.id});
             })
             .then(function(res) {
@@ -126,7 +126,7 @@ test('Message expiration', function(t) {
                 return addUserToChat(userInfo, req); // readd user as valid user is required to get messages & we've expired in this time
             })
             .then(function() {
-                return req.get('/messages')
+                return req.get('/latest')
                             .query({id: userInfo.id});
             })
             .then(function(res) {
@@ -142,7 +142,7 @@ test('User expiration', function(t) {
     var req = freshChatAppRequest();
     return addUserToChat(userInfo, req)
             .then(function() {
-                return req.get('/messages')
+                return req.get('/latest')
                             .query({id: userInfo.id})
                             .expect(200)
                             .then(function() {
@@ -153,7 +153,7 @@ test('User expiration', function(t) {
                 clock.tick(31000); // users expire every 30 seconds
             })
             .then(function() {
-                return req.get('/messages')
+                return req.get('/latest')
                             .query({id: userInfo.id})
                             .expect(403)
                             .then(function() {
@@ -167,8 +167,8 @@ test('User expiration', function(t) {
                 clock.tick(29500); // users expire every 30 seconds, 1/2 second until expiration
             })
             .then(function() {
-                // GET /messages prevents user expiration
-                return req.get('/messages')
+                // GET /latest prevents user expiration
+                return req.get('/latest')
                             .query({id: userInfo.id})
                             .expect(200);
             })
@@ -176,11 +176,11 @@ test('User expiration', function(t) {
                 clock.tick(29500); // 59 seconds have now passed since user added to chat
             })
             .then(function() {
-                return req.get('/messages')
+                return req.get('/latest')
                             .query({id: userInfo.id})
                             .expect(200)
                             .then(function(res) {
-                                t.pass('GET /messages refreshes a user\'s 30 second expiration');
+                                t.pass('GET /latest refreshes a user\'s 30 second expiration');
                             });
             })
             .then(function() {

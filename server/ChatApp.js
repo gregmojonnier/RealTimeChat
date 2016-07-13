@@ -23,7 +23,7 @@ app.use(express.static(path.join(__dirname, '..', '/public')));
 app.get('/', renderIndexHandler);
 app.get('/active-users', renderActiveUsersHandler);
 app.get('/chat', renderChatHandler);
-app.get('/messages', queryMessagesHandler);
+app.get('/latest', queryLatestChatInfoHandler);
 app.post('/user', addUserHandler);
 app.post('/message', addMessageHandler);
 app.post('/logout', logOutHandler);
@@ -59,7 +59,7 @@ function getUsersListForClient() {
     return usersForClient;
 }
 
-function queryMessagesHandler(req, res, next) {
+function queryLatestChatInfoHandler(req, res, next) {
     if (!req.query.id) {
         next('request query missing id');
         return;
