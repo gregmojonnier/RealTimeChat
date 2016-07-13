@@ -105,31 +105,46 @@ $(document).ready(function() {
         $("#chat-a").attr('href', '/chat');
     }
 
+    var lastShownMessageTime;
     function getLatestMessagesAndUsers() {
         $.get("/messages", {id: getChatCookies().id})
             .done(function( data ) {
-            var additionalMessages = "<h1>hi</h1>";
-            var messages = data.messages;
-            messages.forEach(function(message) {
+                var additionalMessages = "<h1>hi</h1>";
+                var allMessages = data.messages;
+                var newMessages;
+                if (allMessages) {
+                    if (lastShownMessageTime) {
+                        newMessages = allMessages.filter(function(message) {
+                            var newMsg = new Date(message.time);
+                            console.log('new ' + newMsg);
+                            console.log('old ' + lastShownMessageTime);
+                            console.log(newMsg > lastShownMessageTime);
+                            return newMsg > lastShownMessageTime;
+                        });
+                    }
+                    lastShownMessageTime = new Date(allMessages[allMessages.length-1].time);
+                    
+                    newMessages.forEach(function(message) {
 
-                // helper function to update these nested divs
-                function createDiv(content, classAttributes, style) {
-                    var newDiv = "<div class=\"" + classAttributes + "\" style=\"" + style + "\">";
-                    newDiv += content + "</div>";
-                    return newDiv;
+                        // helper function to update these nested divs
+                        function createDiv(content, classAttributes, style) {
+                            var newDiv = "<div class=\"" + classAttributes + "\" style=\"" + style + "\">";
+                            newDiv += content + "</div>";
+                            return newDiv;
+                        }
+
+                        // construct the updated message divs
+                        var messageTime = new Date(message.time);
+                        messageTime = messageTime.getDate() + "/" + messageTime.getMonth() + " " + messageTime.getHours() + ":" + messageTime.getMinutes();
+                        var newMessageTimeDiv = createDiv(messageTime, "col-md-2", "");
+                        var newMessageNameDiv = createDiv(message.name, "col-md-2", "");
+                        var newMessageMessageDiv = createDiv(message.message, "col-md-8", "");
+                        var newMessageRowContent = newMessageTimeDiv + newMessageNameDiv + newMessageMessageDiv;
+
+                        var newMessageRowDiv = createDiv(newMessageRowContent, "row", "border: 2px solid;");
+                        $("#messages-col").append(newMessageRowDiv);
+                    });
                 }
-
-                // construct the updated message divs
-                var messageTime = new Date(message.time);
-                messageTime = messageTime.getDate() + "/" + messageTime.getMonth() + " " + messageTime.getHours() + ":" + messageTime.getMinutes();
-                var newMessageTimeDiv = createDiv(messageTime, "col-md-2", "");
-                var newMessageNameDiv = createDiv(message.name, "col-md-2", "");
-                var newMessageMessageDiv = createDiv(message.message, "col-md-8", "");
-                var newMessageRowContent = newMessageTimeDiv + newMessageNameDiv + newMessageMessageDiv;
-
-                var newMessageRowDiv = createDiv(newMessageRowContent, "row", "border: 2px solid;");
-                $("#messages-col").append(newMessageRowDiv);
-            });
         })
         .fail(function() {
             alert("Unable to get the latest messages :(");
