@@ -26,6 +26,7 @@ $(document).ready(function() {
                 addChatSpecificNavBarItems(cookies.name);
                 setChatPageButtonListeners();
                 setInterval(getLatestMessagesAndUsers, 5000);
+                $("p:contains(" + cookies.name + ")").css("color", "green")
             } else {
                 window.location.replace('/');
             }
@@ -111,7 +112,7 @@ $(document).ready(function() {
             .done(function( data ) {
                 updateUsersList(data.users);
                 var allMessages = data.messages;
-                var newMessages;
+                var newMessages = [];
                 if (allMessages) {
                     if (lastShownMessageTime) {
                         newMessages = allMessages.filter(function(message) {
@@ -153,13 +154,21 @@ $(document).ready(function() {
     }
 
     function updateUsersList(allUsers) {
+        var currentUserName = getChatCookies().name;
         var usersHeaderHtml = "<h4 style=\"text-decoration:underline\">Active Users - " + allUsers.length + "</h3>";
         if (allUsers) {
             console.log(allUsers);
             var usersHtml = "";
             allUsers.forEach(function(user) {
                 if (user && user.name) {
-                    usersHtml += "<p>" + user.name + "</p>";
+                    usersHtml += "<p";
+                    if (user.name == currentUserName) {
+                        usersHtml += " style=\"color:green\">"
+                    } else {
+                        usersHtml += ">"
+                    }
+
+                    usersHtml += user.name + "</p>";
                 }
             });
             $("#users-list").html(usersHeaderHtml + usersHtml);
