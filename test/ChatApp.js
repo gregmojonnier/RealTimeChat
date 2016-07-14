@@ -57,21 +57,21 @@ test('POST /message - can be used to add a message', function(t) {
             });
 });
 
-test('GET /latest - can be used to query messages', function(t) {
+test('GET /latest - can be used to query all the latest chat information(messages & users)', function(t) {
     var userInfo = {'name':'foobar'};
     var req = freshChatAppRequest();
     return req
             .get('/latest')
             .expect(400)
             .then(function() {
-                t.pass('We get 400 when trying to get messages without specifying a user id');
+                t.pass('We get 400 when trying to get the latest chat info without specifying a user id');
                 return req.get('/latest')
                             .query({id: 'a_bad_id'})
                             .expect(403);
             })
             .then(function(res) {
                 var body = res.body;
-                t.ok(body.error, 'We get 403 and the response has an error when trying to get messages with a bad user id');
+                t.ok(body.error, 'We get 403 and the response has an error when trying to get the latest chat info with a bad user id');
             })
             .then(function() {
                 return addUserToChat(userInfo, req);
@@ -81,12 +81,30 @@ test('GET /latest - can be used to query messages', function(t) {
                             .query({id: userInfo.id})
                             .expect('Content-Type', /json/)
                             .expect(200)
-                            .expect({messages: []})
                             .then(function(res) {
                                 var messages = res.body.messages;
-                                t.ok(messages, 'A valid messages response has a messages key');
+                                var users = res.body.users;
+                                t.ok(messages, 'A valid /latest response has a messages key');
                                 t.ok(_.isArray(messages), 'messages is an array');
                                 t.isEqual(messages.length, 0, 'starts with 0 messages');
+                                t.ok(users, 'A valid /latest response also has a users key');
+                                t.ok(_.isArray(users), 'users is an array');
+                                t.isEqual(users.length, 1, 'starts with 1 user as only a valid user can query latest chat info');
+                                t.ok(_.find(users, {name: userInfo.name}), 'our name is in the users list');
+                            })
+            })
+            .then(function() {
+                return addUserToChat({'name':'another_user'}, req);
+            })
+            .then(function() {
+                return req.get('/latest')
+                            .query({id: userInfo.id})
+                            .then(function(res) {
+                                var users = res.body.users;
+                                var user = users[0];
+                                t.isEqual(users.length, 2, '/latest\'s returned users array grows by 1 when another user is added to the chat');
+                                t.ok(user.name, 'each user has a\nname');
+                                t.ok(_.isNumber(user.lastActiveInMS), 'each user has a\nlastActiveInMS time');
                             })
             })
             .then(function() {
@@ -97,7 +115,7 @@ test('GET /latest - can be used to query messages', function(t) {
                             .query({id: userInfo.id});
             })
             .then(function(res) {
-                t.isEqual(res.body.messages.length, 1, 'adding a message results in the messages array growing by 1');
+                t.isEqual(res.body.messages.length, 1, '/latest\'s returned messages array grows by 1 when a message is added');
                 var message = res.body.messages[0];
                 t.ok(message.name, 'each message has a\nname');
                 t.ok(message.message, 'each message has a message');

@@ -68,7 +68,7 @@ function queryLatestChatInfoHandler(req, res, next) {
     var user = getUserById(req.query.id);
     if (user) {
         refreshUser(user);
-        res.status(200).json({messages});
+        res.status(200).json({messages, users: getUsersListForClient()});
     } else {
         res.status(403).json({error:'invalid user'});
     }
