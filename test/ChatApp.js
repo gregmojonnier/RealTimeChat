@@ -18,6 +18,24 @@ test('POST /user - a name is all that\'s needed to add a user', function(t) {
             t.isEqual(body.name, 'foobar', 'response name matches what we sent');
             t.true(isValidUuid(body.id), 'response id is a valid uuid');
         })
+        .then(function() {
+            return req
+                .post('/user')
+                .send({'name':'_20_char_length_name'})
+                .expect(201)
+        })
+        .then(function() {
+            return req
+                .post('/user')
+                .send({'name':'_21_char_length_nameX'})
+                .expect(400)
+        })
+        .then(function(res) {
+            var body = res.body;
+            t.pass('400 is returned when a username >20 characters is specified');
+            t.ok(body.error, 'response has an error key');
+            t.isEqual(body.error, 'Username must be less than or equal to 20 characters!', 'error cites username but be <= 20 characters');
+        })
 });
 
 test('POST /message - can be used to add a message', function(t) {

@@ -44,7 +44,11 @@ $(document).ready(function() {
                     window.location.replace('/chat');
                 })
                 .fail(function(res) {
-                    alert("Unable to join chat at this time :(");
+                    if (res && res.responseJSON && res.responseJSON.error) {
+                        alert(res.responseJSON.error);
+                    } else {
+                        alert("Unable to join chat at this time :(");
+                    }
                 });
             } else {
                 alert("You must enter a name to chat!");

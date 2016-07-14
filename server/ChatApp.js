@@ -75,11 +75,16 @@ function queryLatestChatInfoHandler(req, res, next) {
 }
 
 function addUserHandler(req, res, next) {
-    if (!req.body || !req.body.name) {
+    if (!req.body || (!req.body.name || !_.isString(req.body.name))) {
         next('body did not contain a valid name');
         return;
     }
-    var userInfo = {name: req.body.name, id: uuid.v4(), lastActiveInMS: Date.now()};
+    var name = req.body.name;
+    if (name.length > 20) {
+        res.status(400).json({error:'Username must be less than or equal to 20 characters!'});
+        return;
+    }
+    var userInfo = {name, id: uuid.v4(), lastActiveInMS: Date.now()};
     users.push(userInfo);
     res.status(201).json(userInfo);
 }
