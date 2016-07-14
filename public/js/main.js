@@ -29,6 +29,7 @@ $(document).ready(function() {
                 setInterval(getLatestMessagesAndUsers, 5000);
                 $("p:contains(" + cookies.name + ")").css("color", "green")
                 $("#message-input").focus();
+                $("#messages-col").scrollTop(function() { return this.scrollHeight; })
             } else {
                 window.location.replace('/');
             }
@@ -147,6 +148,7 @@ $(document).ready(function() {
 
                         var newMessageRowDiv = createDiv(newMessageRowContent, "row", "border: 2px solid;");
                         $("#messages-col").append(newMessageRowDiv);
+                        $("#messages-col").scrollTop(function() { return this.scrollHeight; })
                     });
                 }
         })
