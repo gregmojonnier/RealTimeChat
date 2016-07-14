@@ -2,7 +2,7 @@ include header
 body
     div.container
         div.row
-            div.col-md-10#messages-col(style="border: 2px solid; min-height: 300px;overflow:scroll")
+            div.col-md-10#messages-col(style="border: 2px solid; min-height: 300px; max-height: 300px; overflow:scroll")
                 div.row(style="border: 2px solid;")
                     div.col-md-2
                         h3 Time
@@ -21,14 +21,14 @@ body
                                 = message.name
                             div.col-md-8(style="word-break: break-all; word-wrap: break-word")
                                 = message.message
-            div.col-md-2(style="border: 2px solid; min-height: 300px")
+            div.col-md-2(style="border: 2px solid; min-height: 300px; max-height: 300px; overflow:scroll")
                 div#users-list
                     h4(style="text-decoration:underline")
                         | Active Users - 
                         = users ? users.length : 0
                     if users && users.length
                         each user in users
-                            p= user.name
+                            p(style="word-break: break-all; word-wrap: break-word")= user.name
         div.row
             div.col-md-12
                 form.navbar-form.navbar-left(style="width: 100%")

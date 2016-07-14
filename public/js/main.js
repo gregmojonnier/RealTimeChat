@@ -117,9 +117,6 @@ $(document).ready(function() {
                     if (lastShownMessageTime) {
                         newMessages = allMessages.filter(function(message) {
                             var newMsg = new Date(message.time);
-                            console.log('new ' + newMsg);
-                            console.log('old ' + lastShownMessageTime);
-                            console.log(newMsg > lastShownMessageTime);
                             return newMsg > lastShownMessageTime;
                         });
                     }
@@ -148,7 +145,8 @@ $(document).ready(function() {
                 }
         })
         .fail(function() {
-            alert("Unable to get the latest messages :(");
+            alert("You've been logged out due to inactivity.");
+            window.location.replace('/');
         });
         
     }
@@ -157,18 +155,14 @@ $(document).ready(function() {
         var currentUserName = getChatCookies().name;
         var usersHeaderHtml = "<h4 style=\"text-decoration:underline\">Active Users - " + allUsers.length + "</h3>";
         if (allUsers) {
-            console.log(allUsers);
             var usersHtml = "";
             allUsers.forEach(function(user) {
                 if (user && user.name) {
-                    usersHtml += "<p";
+                    usersHtml += "<p style=\"word-break: break-all; word-wrap: break-word";
                     if (user.name == currentUserName) {
-                        usersHtml += " style=\"color:green\">"
-                    } else {
-                        usersHtml += ">"
+                        usersHtml += ";color:green";
                     }
-
-                    usersHtml += user.name + "</p>";
+                    usersHtml += "\">" + user.name + "</p>";
                 }
             });
             $("#users-list").html(usersHeaderHtml + usersHtml);
