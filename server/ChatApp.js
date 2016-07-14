@@ -83,7 +83,11 @@ function addUserHandler(req, res, next) {
     if (name.length > 20) {
         res.status(400).json({error:'Username must be less than or equal to 20 characters!'});
         return;
+    } else if (getUserByName(name)) {
+        res.status(400).json({error:'Username is already in use, yours must be unique!'});
+        return;
     }
+
     var userInfo = {name, id: uuid.v4(), lastActiveInMS: Date.now()};
     users.push(userInfo);
     res.status(201).json(userInfo);
@@ -101,6 +105,14 @@ function getUserById(id) {
     var user;
     if (id) {
         user = _.find(users, {id});
+    }
+    return user;
+}
+
+function getUserByName(name) {
+    var user;
+    if (name) {
+        user = _.find(users, {name});
     }
     return user;
 }

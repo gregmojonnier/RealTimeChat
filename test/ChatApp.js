@@ -36,6 +36,24 @@ test('POST /user - a name is all that\'s needed to add a user', function(t) {
             t.ok(body.error, 'response has an error key');
             t.isEqual(body.error, 'Username must be less than or equal to 20 characters!', 'error cites username but be <= 20 characters');
         })
+        .then(function() {
+            return req
+                .post('/user')
+                .send({'name':'a_duplicate_user'})
+                .expect(201)
+        })
+        .then(function() {
+            return req
+                .post('/user')
+                .send({'name':'a_duplicate_user'})
+                .expect(400)
+        })
+        .then(function(res) {
+            var body = res.body;
+            t.pass('400 is returned when a username that is already in use is specified');
+            t.ok(body.error, 'response has an error key');
+            t.isEqual(body.error, 'Username is already in use, yours must be unique!', 'error cites that username is already in use');
+        })
 });
 
 test('POST /message - can be used to add a message', function(t) {
