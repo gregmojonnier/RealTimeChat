@@ -17,6 +17,7 @@ $(document).ready(function() {
             if (isLoggedIn)
                 window.location.replace('/chat');
             else
+                $("#user").focus();
                 registerLi.addClass("active");
                 setIndexPageButtonListeners();
         } else if (path == "/chat") {
@@ -27,6 +28,7 @@ $(document).ready(function() {
                 setChatPageButtonListeners();
                 setInterval(getLatestMessagesAndUsers, 5000);
                 $("p:contains(" + cookies.name + ")").css("color", "green")
+                $("#message-input").focus();
             } else {
                 window.location.replace('/');
             }
