@@ -107,9 +107,9 @@ $(document).ready(function() {
 
     var lastShownMessageTime;
     function getLatestMessagesAndUsers() {
-        $.get("/messages", {id: getChatCookies().id})
+        $.get("/latest", {id: getChatCookies().id})
             .done(function( data ) {
-                var additionalMessages = "<h1>hi</h1>";
+                updateUsersList(data.users);
                 var allMessages = data.messages;
                 var newMessages;
                 if (allMessages) {
@@ -150,5 +150,19 @@ $(document).ready(function() {
             alert("Unable to get the latest messages :(");
         });
         
+    }
+
+    function updateUsersList(allUsers) {
+        var usersHeaderHtml = "<h4 style=\"text-decoration:underline\">Active Users - " + allUsers.length + "</h3>";
+        if (allUsers) {
+            console.log(allUsers);
+            var usersHtml = "";
+            allUsers.forEach(function(user) {
+                if (user && user.name) {
+                    usersHtml += "<p>" + user.name + "</p>";
+                }
+            });
+            $("#users-list").html(usersHeaderHtml + usersHtml);
+        }
     }
 });
