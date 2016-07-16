@@ -120,7 +120,7 @@ $(document).ready(function() {
                 updateUsersList(data.users);
                 var allMessages = data.messages;
                 var newMessages = [];
-                if (allMessages) {
+                if (allMessages.length > 0) {
                     if (lastShownMessageTime) {
                         newMessages = allMessages.filter(function(message) {
                             var newMsg = new Date(message.time);
