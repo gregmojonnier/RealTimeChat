@@ -143,10 +143,10 @@ $(document).ready(function() {
                         messageTime = messageTime.getDate() + "/" + messageTime.getMonth() + " " + messageTime.getHours() + ":" + messageTime.getMinutes();
                         var newMessageTimeDiv = createDiv(messageTime, "col-md-2", "");
                         var newMessageNameDiv = createDiv(message.name, "col-md-2", "");
-                        var newMessageMessageDiv = createDiv(message.message, "col-md-8", "word-break: break-all; word-wrap: break-word");
+                        var newMessageMessageDiv = createDiv(message.message, "col-md-8 wrap_text", "");
                         var newMessageRowContent = newMessageTimeDiv + newMessageNameDiv + newMessageMessageDiv;
 
-                        var newMessageRowDiv = createDiv(newMessageRowContent, "row", "border: 2px solid;");
+                        var newMessageRowDiv = createDiv(newMessageRowContent, "row", "");
                         $("#messages-col").append(newMessageRowDiv);
                         $("#messages-col").scrollTop(function() { return this.scrollHeight; })
                     });
@@ -166,11 +166,11 @@ $(document).ready(function() {
             var usersHtml = "";
             allUsers.forEach(function(user) {
                 if (user && user.name) {
-                    usersHtml += "<p style=\"word-break: break-all; word-wrap: break-word";
+                    usersHtml += "<p class=\"wrap_text\"";
                     if (user.name == currentUserName) {
-                        usersHtml += ";color:green";
+                        usersHtml += " style=\"color:green\"";
                     }
-                    usersHtml += "\">" + user.name + "</p>";
+                    usersHtml += ">" + user.name + "</p>";
                 }
             });
             $("#users-list").html(usersHeaderHtml + usersHtml);

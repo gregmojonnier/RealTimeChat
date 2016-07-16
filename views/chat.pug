@@ -2,7 +2,7 @@ include header
 body
     div.container
         div.row
-            div.col-md-10#messages-col(style="border: 2px solid; min-height: 300px; max-height: 300px; overflow-y:scroll")
+            div.col-md-10#messages-col
                 div.row(style="border: 2px solid;")
                     div.col-md-2
                         h3 Time
@@ -12,26 +12,26 @@ body
                         h3 Message
                 if messages && messages.length
                     each message in messages
-                        div.row(style="border: 2px solid;")
+                        div.row
                             - var t = new Date(message.time);
                             - var simpleTime = t.getDate() + "/" + t.getMonth() + " " + t.getHours() + ":" + t.getMinutes();
                             div.col-md-2
                                 = simpleTime
                             div.col-md-2
                                 = message.name
-                            div.col-md-8(style="word-break: break-all; word-wrap: break-word")
+                            div.col-md-8.wrap_text
                                 = message.message
-            div.col-md-2(style="border: 2px solid; min-height: 300px; max-height: 300px; overflow-y:scroll")
+            div.col-md-2
                 div#users-list
                     h4(style="text-decoration:underline")
                         | Active Users - 
                         = users ? users.length : 0
                     if users && users.length
                         each user in users
-                            p(style="word-break: break-all; word-wrap: break-word")= user.name
+                            pi.wrap_text= user.name
         div.row
             div.col-md-12
                 form.navbar-form.navbar-left(style="width: 100%")
                     div.form-group(style="width: 100%")
-                        input.form-control#message-input(type="text", placeholder="Enter message...", style="width: 700px; display:inline-block")
+                        input.form-control#message-input(type="text", placeholder="Enter message...")
                         button.btn.btn-default#send(style="display:inline-block") Send

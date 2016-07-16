@@ -1,15 +1,17 @@
 doctype html
 html(lang="en")
     link(rel="stylesheet", href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css")
+    link(rel="stylesheet", href="css/main.css")
     script(src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.2/jquery.min.js")
     script(src="//cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js")
     script(src="js/main.js")
     head
         title Ultimate Chat App!
 
-    nav
-        ul.nav.nav-tabs#nav-ul
-            li#register-li(role="presentation")
-                a#register-a(href="/") Register
-            li.disabled#chat-li(role="presentation")
-                a#chat-a Chat
+    body
+        nav
+            ul.nav.nav-tabs#nav-ul
+                li#register-li(role="presentation")
+                    a#register-a(href="/") Register
+                li.disabled#chat-li(role="presentation")
+                    a#chat-a Chat

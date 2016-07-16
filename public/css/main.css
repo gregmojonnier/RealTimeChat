@@ -1,0 +1,16 @@
+#messages-col {
+    border: 2px solid;
+    min-height: 300px;
+    max-height: 300px;
+    overflow-y: scroll
+}
+
+#message-input {
+    width: 700px;
+    display: inline-block
+}
+
+.wrap_text {
+    word-break: break-all;
+    word-wrap: break-word
+}
