@@ -1,4 +1,5 @@
 $(document).ready(function() {
+    $('[data-toggle="tooltip"]').tooltip(); 
     // cookies used to track users logged in status client side
     var chatUserCookieName = '_chatUser';
     var chatUserCookieId = '_chatId';

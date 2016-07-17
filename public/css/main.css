@@ -14,3 +14,11 @@
     word-break: break-all;
     word-wrap: break-word
 }
+
+input:disabled {
+    color:#717782;
+}
+
+.error {
+    color: red
+}

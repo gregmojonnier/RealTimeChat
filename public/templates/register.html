@@ -1,0 +1,5 @@
+<form name='createUserForm' ng-submit='createUser()'>
+    Choose your... <input type='text' value='User name' ng-model='username' data-toggle='tooltip' title='Username must be between 1-20 characters!' ng-minlength='1' ng-maxlength='20' required></input>
+    <button class='btn btn-default' type='submit' ng-disabled='!createUserForm.$valid'>Register!</button>
+</form>
+<h2 class='error'>{{registrationError}}</h2>
