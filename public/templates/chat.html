@@ -8,7 +8,7 @@
             </div>
             <div class="row" style="border: 2px solid;">
                 <div class="row" ng-repeat="message in messages">
-                    <div class="col-md-2">{{message.time | date : "medium"}}</div>
+                    <div class="col-md-2">{{message.time | date : "short"}}</div>
                     <div class="col-md-2" ng-class="{current_user:(message.name==loggedInUser)}">{{message.name}}</div>
                     <div class="col-md-8 wrap_text">{{message.message}}</div>
                 </div>
