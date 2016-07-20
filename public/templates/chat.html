@@ -1,2 +1,35 @@
+<div class="container">
+    <div class="row">
+        <div class="col-md-10" id="messages-col">
+            <div class="row" style="border: 2px solid;">
+                <div class="col-md-2"><h3>Time</h3></div>
+                <div class="col-md-2"><h3>Name</h3></div>
+                <div class="col-md-8"><h3>Message</h3></div>
+            </div>
+            <div class="row" style="border: 2px solid;">
+                <div class="row" ng-repeat="message in messages">
+                    <div class="col-md-2">{{message.time | date : "medium"}}</div>
+                    <div class="col-md-2">{{message.name}}</div>
+                    <div class="col-md-8 wrap_text">{{message.message}}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div id="users-list">
+                <h4 style="text-decoration:underline">Active Users - <span>{{users.length}}</span></h4>
+                <p class="wrap_text" ng-repeat="user in users">{{user.name}}</p>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+                <form name="addMessageForm" ng-submit="addMessage()" class="navbar-form.navbar-left" style="width:100%">
+                    <div class="form-group" style="width:100%">
+                        <input ng-model="newMessage" ng-minlength='1' required class="form-control" id="message-input" type="text" placeholder="Enter message...">
+                        <button class="btn btn-default" id="send" style="display:inline-block" ng-disabled='!addMessageForm.$valid'> Send</button>
+                    </div>
+                </form>
+        </div>
+    </div>
+</div>
 
-<h1>hello</h1>

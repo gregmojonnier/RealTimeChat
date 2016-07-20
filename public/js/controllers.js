@@ -14,4 +14,44 @@ controllers.controller('RegisterCtrl', function($scope, $http, $location) {
 });
 
 controllers.controller('ChatCtrl', function($scope, $http, $location) {
+    $scope.users = [];
+    var user = $.cookie('_chatUser');
+    var userId = $.cookie('_chatId');
+    if (!user || !userId) {
+        $location.url('/');
+    } else {
+        refreshChatData();
+        setInterval(refreshChatData, 3000);
+    }
+
+    $scope.addMessage = function() {
+        $http.post('/message', {id: userId, message: $scope.newMessage})
+            .then(function success(response) {
+                $scope.newMessage = '';
+            }, function error(response) {
+            });
+        refreshChatData();
+    };
+
+    function refreshChatData() {
+        console.log("refreshing");
+        $http.get('/latest', {params: {id: userId}})
+            .then(function success(response) {
+                $scope.users = response.data.users;
+                response.data.messages.forEach(function(message) {
+                    if (message.time) {
+                        message.time = new Date(message.time);
+                    }
+                });
+                $scope.messages = response.data.messages;
+                nicePageUi();
+            }, function error(response) {
+            });
+    };
+
+    function nicePageUi() {
+        $("#message-input").focus();
+        $("p:contains(" + user + ")").css("color", "green")
+        $("#messages-col").scrollTop(function() { return this.scrollHeight; })
+    }
 });
