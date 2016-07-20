@@ -22,3 +22,8 @@ input:disabled {
 .error {
     color: red
 }
+
+.current_user {
+    color: green;
+    font-weight: bold
+}

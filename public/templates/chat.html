@@ -9,7 +9,7 @@
             <div class="row" style="border: 2px solid;">
                 <div class="row" ng-repeat="message in messages">
                     <div class="col-md-2">{{message.time | date : "medium"}}</div>
-                    <div class="col-md-2">{{message.name}}</div>
+                    <div class="col-md-2" ng-class="{current_user:(message.name==loggedInUser)}">{{message.name}}</div>
                     <div class="col-md-8 wrap_text">{{message.message}}</div>
                 </div>
             </div>
@@ -17,7 +17,7 @@
         <div class="col-md-2">
             <div id="users-list">
                 <h4 style="text-decoration:underline">Active Users - <span>{{users.length}}</span></h4>
-                <p class="wrap_text" ng-repeat="user in users">{{user.name}}</p>
+                <p class="wrap_text" ng-repeat="user in users" ng-class="{current_user:(user.name==loggedInUser)}">{{user.name}}</p>
             </div>
         </div>
     </div>

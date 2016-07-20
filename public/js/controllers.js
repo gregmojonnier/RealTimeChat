@@ -20,6 +20,7 @@ controllers.controller('ChatCtrl', function($scope, $http, $location) {
     if (!user || !userId) {
         $location.url('/');
     } else {
+        $scope.loggedInUser = user;
         refreshChatData();
         setInterval(refreshChatData, 3000);
     }
