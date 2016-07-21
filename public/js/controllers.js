@@ -22,7 +22,7 @@ controllers.controller('ChatCtrl', function($scope, $http, $location) {
     } else {
         $scope.loggedInUser = user;
         refreshChatData();
-        setInterval(refreshChatData, 3000);
+        setInterval(refreshChatData, 2000);
         angular.element(document).ready(function() {
             $("#message-input").focus();
             scrollToBottomOfMessages();
@@ -33,20 +33,24 @@ controllers.controller('ChatCtrl', function($scope, $http, $location) {
         $http.post('/message', {id: userId, message: $scope.newMessage})
             .then(function success(response) {
                 $scope.newMessage = '';
-            }, function error(response) {
             });
+        scrollToBottomOfMessages()
         refreshChatData();
     };
+
     $scope.logout = function() {
-        alert('logout!');
+        $.removeCookie('_chatUser');
+        $.removeCookie('_chatId');
+        $http.post('/logout', {id: userId})
+            .then(function success(response) {
+                window.location.replace('/');
+            });
     };
 
     function refreshChatData() {
-        console.log("refreshing");
         $http.get('/latest', {params: {id: userId}})
             .then(function success(response) {
                 $scope.users = response.data.users;
-                console.log(response.data);
                 response.data.messages.forEach(function(message) {
                     if (message.time) {
                         message.time = new Date(message.time);
@@ -57,7 +61,6 @@ controllers.controller('ChatCtrl', function($scope, $http, $location) {
                 if (newMessages) {
                     scrollToBottomOfMessages()
                 }
-            }, function error(response) {
             });
     };
 
