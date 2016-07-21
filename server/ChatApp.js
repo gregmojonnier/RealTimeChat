@@ -14,19 +14,19 @@ if (process.env.NODE_ENV !== 'test') {
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-app.set('view engine', 'pug');
 
 var users = [];
 var messages = [];
 
-app.use(express.static(path.join(__dirname, '..', '/public')));
-app.get('/', renderIndexHandler);
+var publicDirectory = path.join(__dirname, '..', '/public');
+var angularAppIndex = path.join(publicDirectory, 'templates', 'index.html');
+app.use(express.static(publicDirectory));
 app.get('/active-users', renderActiveUsersHandler);
-app.get('/chat', renderChatHandler);
 app.get('/latest', queryLatestChatInfoHandler);
 app.post('/user', addUserHandler);
 app.post('/message', addMessageHandler);
 app.post('/logout', logOutHandler);
+app.get('*', renderIndexHandler);
 app.use(errorHandler);
 
 var cleanInactiveUsersInterval = 30000; // 30 seconds
@@ -35,16 +35,11 @@ setInterval(cleanInactiveUsers, cleanInactiveUsersInterval);
 setInterval(cleanStaleMessages, cleanStaleMessagesInterval);
 
 function renderIndexHandler(req, res) {
-    res.render('index', {});
+    res.sendFile(angularAppIndex);
 }
 
 function renderActiveUsersHandler(req, res) {
     res.render('active-users', {users});
-}
-
-function renderChatHandler(req, res) {
-    var usersForClient = getUsersListForClient();
-    res.render('chat', {messages, users:usersForClient});
 }
 
 function getUsersListForClient() {

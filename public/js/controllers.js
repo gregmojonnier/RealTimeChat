@@ -23,6 +23,10 @@ controllers.controller('ChatCtrl', function($scope, $http, $location) {
         $scope.loggedInUser = user;
         refreshChatData();
         setInterval(refreshChatData, 3000);
+        angular.element(document).ready(function() {
+            $("#message-input").focus();
+            scrollToBottomOfMessages();
+        });
     }
 
     $scope.addMessage = function() {
@@ -33,26 +37,31 @@ controllers.controller('ChatCtrl', function($scope, $http, $location) {
             });
         refreshChatData();
     };
+    $scope.logout = function() {
+        alert('logout!');
+    };
 
     function refreshChatData() {
         console.log("refreshing");
         $http.get('/latest', {params: {id: userId}})
             .then(function success(response) {
                 $scope.users = response.data.users;
+                console.log(response.data);
                 response.data.messages.forEach(function(message) {
                     if (message.time) {
                         message.time = new Date(message.time);
                     }
                 });
+                var newMessages = $scope.messages !== response.data.messages;
                 $scope.messages = response.data.messages;
-                nicePageUi();
+                if (newMessages) {
+                    scrollToBottomOfMessages()
+                }
             }, function error(response) {
             });
     };
 
-    function nicePageUi() {
-        $("#message-input").focus();
-        $("p:contains(" + user + ")").css("color", "green")
+    function scrollToBottomOfMessages() {
         $("#messages-col").scrollTop(function() { return this.scrollHeight; })
     }
 });
