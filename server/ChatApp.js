@@ -21,12 +21,12 @@ var messages = [];
 var publicDirectory = path.join(__dirname, '..', '/public');
 var angularAppIndex = path.join(publicDirectory, 'templates', 'index.html');
 app.use(express.static(publicDirectory));
-app.get('/active-users', renderActiveUsersHandler);
 app.get('/latest', queryLatestChatInfoHandler);
 app.post('/user', addUserHandler);
 app.post('/message', addMessageHandler);
 app.post('/logout', logOutHandler);
-app.get('*', renderIndexHandler);
+app.get('/', renderIndexHandler);
+app.get('*', redirectToIndex);
 app.use(errorHandler);
 
 var cleanInactiveUsersInterval = 30000; // 30 seconds
@@ -34,12 +34,12 @@ var cleanStaleMessagesInterval = 60000 * 5; // 5 minutes
 setInterval(cleanInactiveUsers, cleanInactiveUsersInterval);
 setInterval(cleanStaleMessages, cleanStaleMessagesInterval);
 
-function renderIndexHandler(req, res) {
-    res.sendFile(angularAppIndex);
+function redirectToIndex(req, res) {
+    res.redirect('/');
 }
 
-function renderActiveUsersHandler(req, res) {
-    res.render('active-users', {users});
+function renderIndexHandler(req, res) {
+    res.sendFile(angularAppIndex);
 }
 
 function getUsersListForClient() {

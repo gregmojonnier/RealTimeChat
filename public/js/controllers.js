@@ -71,6 +71,11 @@ controllers.controller('ChatCtrl', function($scope, $http, $state, credentials) 
                     if (newMessages) {
                         scrollToBottomOfMessages()
                     }
+                }, function error(response) {
+                    // user probably closed tab but kept browser window open, so user is considered stale server side
+                    credentials.logOut();
+                    alert('You\'ve been logged out due to inactivity!');
+                    $state.go('register');
                 });
         }
     };
