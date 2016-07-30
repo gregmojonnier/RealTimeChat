@@ -39,9 +39,8 @@ controllers.controller('ChatCtrl', function($scope, $http, $state, credentials) 
         $http.post('/message', {id: userId, message: $scope.newMessage})
             .then(function success(response) {
                 $scope.newMessage = '';
+                refreshChatData();
             });
-        scrollToBottomOfMessages()
-        refreshChatData();
     };
 
     $scope.logout = function() {
@@ -81,6 +80,6 @@ controllers.controller('ChatCtrl', function($scope, $http, $state, credentials) 
     };
 
     function scrollToBottomOfMessages() {
-        $("#messages-col").scrollTop(function() { return this.scrollHeight; })
+        $("#messages-row").scrollTop(function() { return this.scrollHeight; })
     }
 });
