@@ -1,11 +1,11 @@
 var controllers = angular.module('chatAppControllers', []);
-controllers.controller('RegisterCtrl', function($scope, $http, $location) {
+controllers.controller('RegisterCtrl', function($scope, $http, $state) {
     $scope.createUser = function() {
         $http.post('/user', {'name': $scope.username})
             .then(function success(response) {
                 $.cookie('_chatUser', response.data.name);
                 $.cookie('_chatId', response.data.id);
-                $location.url('/chat');
+                $state.go('chat');
             }, function error(response) {
                 $scope.registrationError = response.data.error;
                 $scope.username = '';
@@ -13,12 +13,12 @@ controllers.controller('RegisterCtrl', function($scope, $http, $location) {
     };
 });
 
-controllers.controller('ChatCtrl', function($scope, $http, $location) {
+controllers.controller('ChatCtrl', function($scope, $http, $state) {
     $scope.users = [];
     var user = $.cookie('_chatUser');
     var userId = $.cookie('_chatId');
     if (!user || !userId) {
-        $location.url('/');
+        $state.go('register');
     } else {
         $scope.loggedInUser = user;
         refreshChatData();
@@ -43,7 +43,7 @@ controllers.controller('ChatCtrl', function($scope, $http, $location) {
         $.removeCookie('_chatId');
         $http.post('/logout', {id: userId})
             .then(function success(response) {
-                window.location.replace('/');
+                $state.go('register');
             });
     };
 
