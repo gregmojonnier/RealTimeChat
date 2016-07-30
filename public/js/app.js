@@ -1,4 +1,4 @@
-var app = angular.module('chatApp', ['ui.router', 'chatAppControllers']);
+var app = angular.module('chatApp', ['ui.router', 'credentialsService', 'chatAppControllers']);
 
 app.config(['$stateProvider', '$urlRouterProvider', function($stateProvider, $urlRouterProvider) {
     $urlRouterProvider.otherwise('');
