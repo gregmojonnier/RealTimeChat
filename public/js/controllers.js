@@ -44,10 +44,8 @@ controllers.controller('ChatCtrl', function($scope, $http, $state, credentials, 
 
     $scope.logout = function() {
         credentials.logOut();
-        $http.post('/logout', {id: userId})
-            .then(function success(response) {
-                $state.go('register');
-            });
+        socket_connection.send('logout', {id: userId});
+        $state.go('register');
     };
 
     function requestAndSetUpChatDataHandler() {

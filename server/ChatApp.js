@@ -7,7 +7,6 @@ var path = require('path');
 var io = require('socket.io');
 
 var app = express();
-//module.exports = app;
 module.exports = StartChatApp;
 
 if (process.env.NODE_ENV !== 'test') {
@@ -24,7 +23,6 @@ var publicDirectory = path.join(__dirname, '..', '/public');
 var angularAppIndex = path.join(publicDirectory, 'templates', 'index.html');
 app.use(express.static(publicDirectory));
 app.get('/latest', queryLatestChatInfoHandler);
-app.post('/logout', logOutHandler);
 app.get('/', renderIndexHandler);
 app.get('*', redirectToIndex);
 app.use(errorHandler);
@@ -158,20 +156,13 @@ function addNewMessage(id, message) {
     return newMessage;
 }
 
-function logOutHandler(req, res, next) {
-    if (!req.body) {
-        next('request body missing');
-        return;
-    } else if (!req.body.id) {
-        next('request body missing id');
-        return;
+function logUserOut(id) {
+    if (!id || !_.isString(id)) {
+        console.log('id must be a valid string to log a user out!');
+        return false;
     }
 
-    if (deleteUserById(req.body.id)) {
-        res.status(200).end();
-    } else {
-        res.status(403).json({error:'invalid user'});
-    }
+    return deleteUserById(id);
 }
 
 function errorHandler(err, req, res, next) {
@@ -211,6 +202,13 @@ function StartChatApp(port) {
             var name = data && data.name;
             var response = addUser(name);
             fn(response);
+            socket.broadcast.emit('all-users-update', {users: getUsersListForClient()});
+        });
+        socket.on('logout', function(data) {
+            var id = data && data.id;
+            if (logUserOut(id)) {
+                socket.broadcast.emit('all-users-update', {users: getUsersListForClient()});
+            }
         });
 
         socket.on('ready-for-chat-info', function(data, fn) {
@@ -221,7 +219,6 @@ function StartChatApp(port) {
             var response = populateuUsersFirstChatInfoRequest(id);
             console.log(response);
             fn(response);
-            socket.broadcast.emit('all-users-update', {users: getUsersListForClient()});
             // evertime a user joins everyone gets update of all users
             // TODO: what about when a user quits?
         });
