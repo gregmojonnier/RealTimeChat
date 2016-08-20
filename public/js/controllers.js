@@ -38,12 +38,8 @@ controllers.controller('ChatCtrl', function($scope, $http, $state, credentials, 
     }
 
     $scope.addMessage = function() {
-        // TODO: add message should get rebroadcast back to everyone
-        $http.post('/message', {id: userId, message: $scope.newMessage})
-            .then(function success(response) {
-                $scope.newMessage = '';
-                refreshChatData();
-            });
+        socket_connection.send('new-message', {id: userId, message: $scope.newMessage});
+        $scope.newMessage = '';
     };
 
     $scope.logout = function() {
@@ -61,25 +57,13 @@ controllers.controller('ChatCtrl', function($scope, $http, $state, credentials, 
             clearInterval(intervalId);
         } else {
             socket_connection.onMessage('all-users-update', function(data) {
-                console.log('received all-users-update');
-                console.log(data.users);
                 if (data && data.users) {
-                    console.log('and scope users before ');
-                    console.log($scope.users);
                     $scope.$applyAsync(function () {
                         $scope.users = data.users;
                     });
                 }
             });
-            socket_connection.onMessage('new-messages-update', function(data) {
-                alert('got messages-update');
-                alert(data.newMessages);
-                if (data && data.newMessages) {
-                    $scope.$applyAsync(function () {
-                        $scope.messages.push(newMessages);
-                    });
-                }
-            });
+
             socket_connection.send('ready-for-chat-info', {'id': info.id}, function(data) {
                 if (data) {
                     $scope.$applyAsync(function () {
@@ -99,12 +83,17 @@ controllers.controller('ChatCtrl', function($scope, $http, $state, credentials, 
                     $state.go('register');
                 }
             });
+            socket_connection.onMessage('new-message', function(message) {
+                $scope.$applyAsync(function () {
+                    if (message) {
+                        $scope.messages.push(message);
+                    }
+                });
+            });
         }
     };
 
     function scrollToBottomOfMessages() {
         $("#messages-row").scrollTop(function() { return this.scrollHeight; })
     }
-
-    $scope.daSocketMessage = [];
 });

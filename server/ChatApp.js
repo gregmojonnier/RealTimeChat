@@ -24,7 +24,6 @@ var publicDirectory = path.join(__dirname, '..', '/public');
 var angularAppIndex = path.join(publicDirectory, 'templates', 'index.html');
 app.use(express.static(publicDirectory));
 app.get('/latest', queryLatestChatInfoHandler);
-app.post('/message', addMessageHandler);
 app.post('/logout', logOutHandler);
 app.get('/', renderIndexHandler);
 app.get('*', redirectToIndex);
@@ -143,25 +142,20 @@ function deleteUserById(id) {
     }
 }
 
-function addMessageHandler(req, res, next) {
-    if (!req.body) {
-        next('request body missing');
-        return;
-    } else if (!req.body.id) {
-        next('request body missing id');
-        return;
-    } else if (!req.body.message) {
-        next('request body missing message');
-        return;
+function addNewMessage(id, message) {
+    var newMessage;
+    if (!id || !_.isString(id)) {
+        console.log('Id must be a valid string to add a new message!');
+    } else if (!message || !_.isString(message)) {
+        console.log('Message must be a valid string to add a new message!');
+    } else {
+        var user = getUserById(id);
+        if (user) {
+            newMessage = {name: user.name, message, time: Date()};
+            messages.push(newMessage);
+        }
     }
-    var user = getUserById(req.body.id);
-    if (user) {
-        messages.push({name: user.name, message: req.body.message, time: Date()});
-        res.status(201).end();
-    }
-    else {
-        res.status(403).json({error:'invalid user'});
-    }
+    return newMessage;
 }
 
 function logOutHandler(req, res, next) {
@@ -230,6 +224,16 @@ function StartChatApp(port) {
             socket.broadcast.emit('all-users-update', {users: getUsersListForClient()});
             // evertime a user joins everyone gets update of all users
             // TODO: what about when a user quits?
+        });
+
+        socket.on('new-message', function(data) {
+            var id = data && data.id;
+            var message = data && data.message;
+
+            var addedMessage = addNewMessage(id, message)
+            if (addedMessage) {
+                io.emit('new-message', addedMessage);
+            }
         });
     });
 }
