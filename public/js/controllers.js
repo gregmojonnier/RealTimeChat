@@ -30,8 +30,7 @@ controllers.controller('ChatCtrl', function($scope, $http, $state, credentials, 
     } else {
         $scope.loggedInUser = info.user;
         userId = info.id;
-        refreshChatData();
-        intervalId = setInterval(refreshChatData, 2000);
+        requestAndSetUpChatDataHandler();
         angular.element(document).ready(function() {
             $("#message-input").focus();
             scrollToBottomOfMessages();
@@ -39,6 +38,7 @@ controllers.controller('ChatCtrl', function($scope, $http, $state, credentials, 
     }
 
     $scope.addMessage = function() {
+        // TODO: add message should get rebroadcast back to everyone
         $http.post('/message', {id: userId, message: $scope.newMessage})
             .then(function success(response) {
                 $scope.newMessage = '';
@@ -54,31 +54,51 @@ controllers.controller('ChatCtrl', function($scope, $http, $state, credentials, 
             });
     };
 
-    function refreshChatData() {
+    function requestAndSetUpChatDataHandler() {
         // stop when user is no longer logged in, otherwise poll chat info
         var info = credentials.get();
         if (!info) {
             clearInterval(intervalId);
         } else {
-            $http.get('/latest', {params: {id: info.id}})
-                .then(function success(response) {
-                    $scope.users = response.data.users;
-                    response.data.messages.forEach(function(message) {
-                        if (message.time) {
-                            message.time = new Date(message.time);
+            socket_connection.onMessage('all-users-update', function(data) {
+                console.log('received all-users-update');
+                console.log(data.users);
+                if (data && data.users) {
+                    console.log('and scope users before ');
+                    console.log($scope.users);
+                    $scope.$applyAsync(function () {
+                        $scope.users = data.users;
+                    });
+                }
+            });
+            socket_connection.onMessage('new-messages-update', function(data) {
+                alert('got messages-update');
+                alert(data.newMessages);
+                if (data && data.newMessages) {
+                    $scope.$applyAsync(function () {
+                        $scope.messages.push(newMessages);
+                    });
+                }
+            });
+            socket_connection.send('ready-for-chat-info', {'id': info.id}, function(data) {
+                if (data) {
+                    $scope.$applyAsync(function () {
+                        if (data.messages) {
+                            $scope.messages = data.messages;
+                        }
+                        if(data.users) {
+                            $scope.users = data.users;
                         }
                     });
-                    var newMessages = $scope.messages !== response.data.messages;
-                    $scope.messages = response.data.messages;
-                    if (newMessages) {
-                        scrollToBottomOfMessages()
-                    }
-                }, function error(response) {
+                } 
+                if (!data || data.error) {
+                    alert('unable to receive chat info');
                     // user probably closed tab but kept browser window open, so user is considered stale server side
                     credentials.logOut();
                     alert('You\'ve been logged out due to inactivity!');
                     $state.go('register');
-                });
+                }
+            });
         }
     };
 

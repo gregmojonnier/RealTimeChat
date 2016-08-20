@@ -88,6 +88,25 @@ function addUser(name) {
     return response
 }
 
+function populateuUsersFirstChatInfoRequest(id) {
+    var response = {};
+    if (!id) {
+        response.error = 'Must specify username to join!';
+    } else if (!_.isString(id)) {
+        response.error = 'Id must be a string!';
+    } else {
+        var user = getUserById(id);
+        if (!user) {
+            response.error = 'Invalid user id!';
+        } else {
+            response.messages = messages;
+            response.users = getUsersListForClient();
+        }
+    }
+
+    return response;
+}
+
 function refreshUser(user) {
     if (user) {
         user.lastActiveInMS = Date.now();
@@ -190,16 +209,27 @@ function StartChatApp(port) {
 
     io.sockets.on('connection', function(socket) {
         console.log("got a connection...");
-        socket.emit('message', {message: 'testing'});
-        socket.on('send', function(data) {
-            console.log('we got an incoming messsage!!!!!');
-            console.log('it is ' + data);
-            io.sockets.emit('message', data);
-        });
 
         socket.on('user-join', function(data, fn) {
-            var response = addUser(data.name);
+            console.log('user join');
+            console.log(data);
+            console.log(data.name);
+            var name = data && data.name;
+            var response = addUser(name);
             fn(response);
+        });
+
+        socket.on('ready-for-chat-info', function(data, fn) {
+            console.log('ready for chat info');
+            console.log(data);
+            console.log(data.id);
+            var id = data && data.id;
+            var response = populateuUsersFirstChatInfoRequest(id);
+            console.log(response);
+            fn(response);
+            socket.broadcast.emit('all-users-update', {users: getUsersListForClient()});
+            // evertime a user joins everyone gets update of all users
+            // TODO: what about when a user quits?
         });
     });
 }
