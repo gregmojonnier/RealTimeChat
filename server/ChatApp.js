@@ -22,14 +22,11 @@ var messages = [];
 var publicDirectory = path.join(__dirname, '..', '/public');
 var angularAppIndex = path.join(publicDirectory, 'templates', 'index.html');
 app.use(express.static(publicDirectory));
-app.get('/latest', queryLatestChatInfoHandler);
 app.get('/', renderIndexHandler);
 app.get('*', redirectToIndex);
 app.use(errorHandler);
 
-var cleanInactiveUsersInterval = 30000; // 30 seconds
-var cleanStaleMessagesInterval = 60000 * 5; // 5 minutes
-setInterval(cleanInactiveUsers, cleanInactiveUsersInterval);
+var cleanStaleMessagesInterval = 60000 * 5; // 5 minutes of history
 setInterval(cleanStaleMessages, cleanStaleMessagesInterval);
 
 function redirectToIndex(req, res) {
@@ -50,21 +47,6 @@ function getUsersListForClient() {
         usersForClient.push(cleanedUser);
     });
     return usersForClient;
-}
-
-function queryLatestChatInfoHandler(req, res, next) {
-    if (!req.query.id) {
-        next('request query missing id');
-        return;
-    }
-
-    var user = getUserById(req.query.id);
-    if (user) {
-        refreshUser(user);
-        res.status(200).json({messages, users: getUsersListForClient()});
-    } else {
-        res.status(403).json({error:'invalid user'});
-    }
 }
 
 function addUser(name) {
@@ -170,13 +152,6 @@ function errorHandler(err, req, res, next) {
     res.status(400).end();
 }
 
-function cleanInactiveUsers() {
-    users = _.filter(users, function(user) {
-        var lastActiveInMS = Date.now() - user.lastActiveInMS;
-        return lastActiveInMS < cleanInactiveUsersInterval;
-    });
-}
-
 function cleanStaleMessages() {
     var currentTime = new Date().getTime();
     messages = _.filter(messages, function(message) {
@@ -193,12 +168,7 @@ function StartChatApp(port) {
     }));
 
     io.sockets.on('connection', function(socket) {
-        console.log("got a connection...");
-
         socket.on('user-join', function(data, fn) {
-            console.log('user join');
-            console.log(data);
-            console.log(data.name);
             var name = data && data.name;
             var response = addUser(name);
             fn(response);
@@ -212,15 +182,9 @@ function StartChatApp(port) {
         });
 
         socket.on('ready-for-chat-info', function(data, fn) {
-            console.log('ready for chat info');
-            console.log(data);
-            console.log(data.id);
             var id = data && data.id;
             var response = populateuUsersFirstChatInfoRequest(id);
-            console.log(response);
             fn(response);
-            // evertime a user joins everyone gets update of all users
-            // TODO: what about when a user quits?
         });
 
         socket.on('new-message', function(data) {
