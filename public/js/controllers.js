@@ -1,23 +1,26 @@
 var controllers = angular.module('chatAppControllers', []);
-controllers.controller('RegisterCtrl', function($scope, $http, $state, credentials) {
+controllers.controller('RegisterCtrl', function($scope, $http, $state, credentials, socket_connection) {
     var info = credentials.get();
     if (info) {
         $state.go('chat');
     } else {
         $scope.createUser = function() {
-            $http.post('/user', {'name': $scope.username})
-                .then(function success(response) {
-                    credentials.set(response.data.name, response.data.id);
-                    $state.go('chat');
-                }, function error(response) {
-                    $scope.registrationError = response.data.error;
-                    $scope.username = '';
-                });
+            socket_connection.send('user-join',
+                                  {'name': $scope.username},
+                                    function(data) {
+                                                    if (data && data.id) {
+                                                        credentials.set($scope.username, data.id);
+                                                        $state.go('chat');
+                                                    } else {
+                                                        $scope.username = '';
+                                                        $scope.registrationError = (data && data.error) ? data.error : 'Failed to register user';
+                                                    }
+                                                });
         };
     }
 });
 
-controllers.controller('ChatCtrl', function($scope, $http, $state, credentials) {
+controllers.controller('ChatCtrl', function($scope, $http, $state, credentials, socket_connection) {
     $scope.users = [];
     var info = credentials.get();
     var userId;
@@ -82,4 +85,6 @@ controllers.controller('ChatCtrl', function($scope, $http, $state, credentials) 
     function scrollToBottomOfMessages() {
         $("#messages-row").scrollTop(function() { return this.scrollHeight; })
     }
+
+    $scope.daSocketMessage = [];
 });

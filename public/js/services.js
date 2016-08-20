@@ -26,3 +26,27 @@ services.factory('credentials', function() {
         }
     };
 });
+
+services.factory('socket_connection', function() {
+    var socket;
+
+    function lazyConnect() {
+        if (!socket) {
+            socket = io.connect('http://localhost:3000');
+        }
+    }
+    return {
+        onMessage: function(msg, cb) {
+            angular.element(document).ready(function() {
+                lazyConnect();
+                socket.on(msg, cb);
+            });
+        },
+        send: function(msg, dataObj, ackCb) {
+            angular.element(document).ready(function() {
+                lazyConnect();
+                socket.emit(msg, dataObj, ackCb);
+            });
+        }
+    };
+});

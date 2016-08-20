@@ -4,9 +4,11 @@ var uuid = require('node-uuid');
 var morgan = require('morgan');
 var _ = require('underscore');
 var path = require('path');
+var io = require('socket.io');
 
 var app = express();
-module.exports = app;
+//module.exports = app;
+module.exports = StartChatApp;
 
 if (process.env.NODE_ENV !== 'test') {
     app.use(morgan('dev'));
@@ -22,7 +24,6 @@ var publicDirectory = path.join(__dirname, '..', '/public');
 var angularAppIndex = path.join(publicDirectory, 'templates', 'index.html');
 app.use(express.static(publicDirectory));
 app.get('/latest', queryLatestChatInfoHandler);
-app.post('/user', addUserHandler);
 app.post('/message', addMessageHandler);
 app.post('/logout', logOutHandler);
 app.get('/', renderIndexHandler);
@@ -69,23 +70,22 @@ function queryLatestChatInfoHandler(req, res, next) {
     }
 }
 
-function addUserHandler(req, res, next) {
-    if (!req.body || (!req.body.name || !_.isString(req.body.name))) {
-        next('body did not contain a valid name');
-        return;
-    }
-    var name = req.body.name;
-    if (name.length > 20) {
-        res.status(400).json({error:'Username must be less than or equal to 20 characters!'});
-        return;
+function addUser(name) {
+    var response = {};
+    if (!name) {
+        response.error = 'Must specify username to join!';
+    } else if (!_.isString(name)) {
+        response.error = 'Username must be a string!';
+    } else if (name.length > 20) {
+        response.error = 'Username must be less than or equal to 20 characters!';
     } else if (getUserByName(name)) {
-        res.status(400).json({error:'Username is already in use, yours must be unique!'});
-        return;
+        response.error = 'Username is already in use, yours must be unique!';
+    } else {
+        var userInfo = {name, id: uuid.v4(), lastActiveInMS: Date.now()};
+        users.push(userInfo);
+        response.id = userInfo.id;
     }
-
-    var userInfo = {name, id: uuid.v4(), lastActiveInMS: Date.now()};
-    users.push(userInfo);
-    res.status(201).json(userInfo);
+    return response
 }
 
 function refreshUser(user) {
@@ -178,5 +178,28 @@ function cleanStaleMessages() {
     messages = _.filter(messages, function(message) {
         var messageAgeInMS = currentTime - new Date(message.time).getTime();
         return messageAgeInMS < cleanStaleMessagesInterval;
+    });
+}
+
+function StartChatApp(port) {
+    io = io.listen(
+        app.listen(port, 
+            function() {
+                console.log('ChatApp listening on port', port + '!');
+    }));
+
+    io.sockets.on('connection', function(socket) {
+        console.log("got a connection...");
+        socket.emit('message', {message: 'testing'});
+        socket.on('send', function(data) {
+            console.log('we got an incoming messsage!!!!!');
+            console.log('it is ' + data);
+            io.sockets.emit('message', data);
+        });
+
+        socket.on('user-join', function(data, fn) {
+            var response = addUser(data.name);
+            fn(response);
+        });
     });
 }
